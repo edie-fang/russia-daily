@@ -125,3 +125,55 @@ html, body {
 .history-item .h-date { font-size: 12px; color: var(--text-sub); margin-left: 10px; }
 .history-item .h-arrow { color: #c0c0c0; font-size: 14px; margin-left: 8px; }
 .hint { padding: 10px 16px; font-size: 12px; color: var(--text-sub); text-align: center; }
+
+/* ===== 仓库被炸专题（红色警示，页面最显眼位置） ===== */
+.warehouse-section {
+  margin: 10px 12px 16px;
+  background: linear-gradient(135deg, #fff1f0 0%, #ffe7e5 100%);
+  border: 1.5px solid #fca5a5;
+  border-radius: 16px;
+  padding: 14px 14px 10px;
+}
+.wh-header {
+  font-size: 17px; font-weight: 700; color: #b91c1c;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.wh-icon { font-size: 20px; }
+.wh-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px;
+}
+.wh-stat {
+  background: #fff; border-radius: 12px; padding: 10px 6px;
+  text-align: center; box-shadow: 0 1px 3px rgba(185,28,28,0.08);
+}
+.wh-num { font-size: 20px; font-weight: 800; color: #b91c1c; line-height: 1.2; }
+.wh-stat-ozon .wh-num { color: #1d4ed8; }
+.wh-stat-cas .wh-num { font-size: 15px; color: #9f1239; }
+.wh-label { font-size: 11px; color: #7f1d1d; margin-top: 3px; }
+.wh-map {
+  height: 240px; border-radius: 12px; overflow: hidden; margin-bottom: 12px;
+  background: #e5e7eb; border: 1px solid #fca5a5;
+}
+.wh-cards-title { font-size: 13px; font-weight: 600; color: #991b1b; margin: 4px 0 8px; }
+.wh-cards { display: flex; flex-direction: column; gap: 8px; }
+.wh-card {
+  background: #fff; border-radius: 12px; padding: 10px 12px;
+  border-left: 3px solid #dc2626;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.wh-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.wh-badge {
+  font-size: 11px; font-weight: 700; color: #fff;
+  padding: 2px 8px; border-radius: 8px;
+}
+.wh-badge.wh-wb { background: #dc2626; }
+.wh-badge.wh-ozon { background: #1d4ed8; }
+.wh-date { font-size: 11px; color: var(--text-sub); }
+.wh-city { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.wh-casualties { font-size: 12px; color: #be123c; font-weight: 600; margin-bottom: 3px; }
+.wh-note { font-size: 12px; color: var(--text-sub); line-height: 1.5; }
+.wh-source { font-size: 11px; color: #2563eb; text-decoration: none; }
+.wh-update { font-size: 10px; color: #b91c1c; text-align: center; margin-top: 10px; opacity: 0.7; }
+@media (max-width: 400px) {
+  .wh-stats { grid-template-columns: repeat(2, 1fr); }
+}
