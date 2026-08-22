@@ -1,0 +1,85 @@
+{
+ "updated": "2026-08-22",
+ "platforms": {
+  "wb": "Wildberries / Russ",
+  "ozon": "Ozon"
+ },
+ "totals": {
+  "wb": 8,
+  "ozon": 1
+ },
+ "events": [
+  {
+   "id": 1, "date": "2026-07-18", "platform": "wb",
+   "city": "Электросталь", "cityCn": "埃列克特罗斯塔利（莫斯科州）",
+   "lat": 55.7896, "lng": 38.4467,
+   "casualties": "1死24伤",
+   "note": "WB仓库遭无人机袭击；附近诺金斯克油库同时起火，邻近妇产医院疏散",
+   "source": "https://ria.ru/20260718/bespilotniki-2105562293.html"
+  },
+  {
+   "id": 2, "date": "2026-07-18", "platform": "wb",
+   "city": "Котовск", "cityCn": "科托夫斯克（坦波夫州）",
+   "lat": 52.5907, "lng": 41.5100,
+   "casualties": "7死25伤",
+   "note": "WB仓库夜间遭大规模无人机袭击，伤亡最重的一起；Ким承诺抚恤",
+   "source": "https://ria.ru/20260718/bespilotniki-2105562293.html"
+  },
+  {
+   "id": 3, "date": "2026-07-22", "platform": "wb",
+   "city": "Краснодар", "cityCn": "克拉斯诺达尔",
+   "lat": 45.0355, "lng": 38.9753,
+   "casualties": "10伤",
+   "note": "WB物流中心夜间遭袭，碎片坠落仓库起火；另2栋公寓2栋民房受损",
+   "source": "https://ria.ru/20260722/sklad-2106137631.html"
+  },
+  {
+   "id": 4, "date": "2026-07-22", "platform": "wb",
+   "city": "Невинномысск", "cityCn": "涅温诺梅斯克（斯塔夫罗波尔边疆区）",
+   "lat": 44.6330, "lng": 41.9445,
+   "casualties": "5伤",
+   "note": "仓库遭袭起火，启动地方级紧急状态，全员疏散",
+   "source": "https://ria.ru/20260722/sklad-2106137631.html"
+  },
+  {
+   "id": 5, "date": "2026-07-28", "platform": "wb",
+   "city": "Сарапул", "cityCn": "萨拉普尔（乌德穆尔特）",
+   "lat": 56.4766, "lng": 53.8039,
+   "casualties": "无伤亡（提前疏散）",
+   "note": "WB仓库遭袭起火；供应链改道至其他设施",
+   "source": "https://ria.ru/20260730/wildberries-2107838916.html"
+  },
+  {
+   "id": 6, "date": "2026-07-31", "platform": "wb",
+   "city": "Волгоград", "cityCn": "伏尔加格勒",
+   "lat": 48.7080, "lng": 44.5133,
+   "casualties": "8伤住院；另1人死于废墟",
+   "note": "WB仓库起火；当日伏尔加格勒州遭大规模无人机袭击，2栋民房受损",
+   "source": "https://ria.ru/20260731/vozgoranie-2108083187.html"
+  },
+  {
+   "id": 7, "date": "2026-08-04", "platform": "wb",
+   "city": "Красный Бор", "cityCn": "红博尔（列宁格勒州托斯诺区）",
+   "lat": 59.6833, "lng": 30.6667,
+   "casualties": "无伤亡（提前疏散）",
+   "note": "WB与Russ仓库遭袭起火；部分设施因应急得当未受损，进货暂时受限",
+   "source": "https://ria.ru/20260804/ataka-2108861698.html"
+  },
+  {
+   "id": 8, "date": "2026-08-07", "platform": "wb",
+   "city": "Екатеринбург", "cityCn": "叶卡捷琳堡",
+   "lat": 56.8389, "lng": 60.6057,
+   "casualties": "无伤亡（全员疏散）",
+   "note": "3架无人机落在仓库屋顶引发火灾；供货改道其他物流设施",
+   "source": "https://ria.ru/20260807/wildberries-2109485086.html"
+  },
+  {
+   "id": 9, "date": "2026-08-22", "platform": "ozon",
+   "city": "Самарская область", "cityCn": "萨马拉州",
+   "lat": 53.1959, "lng": 50.1002,
+   "casualties": "数人受伤",
+   "note": "Ozon物流综合体被击中；仓库宣布无限期停工，物流重新分配，平台整体运营正常",
+   "source": "https://ria.ru/20260822/ataka-2112419264.html"
+  }
+ ]
+}
