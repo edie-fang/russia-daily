@@ -129,6 +129,16 @@
         (e.source ? '<a class="wh-source" href="' + esc2(e.source) + '" target="_blank">来源 ↗</a>' : '') +
       '</div>';
     });
+    var insights = db.insights || [];
+    var insightCards = '';
+    insights.forEach(function (ins) {
+      insightCards += '<div class="wh-insight">' +
+        '<div class="wh-insight-head"><span class="wh-insight-icon">' + esc2(ins.icon || '💡') + '</span>' +
+        '<span class="wh-insight-title">' + esc2(ins.title) + '</span></div>' +
+        '<div class="wh-insight-text">' + esc2(ins.text) + '</div>' +
+        (ins.source ? '<div class="wh-insight-source">来源：' + esc2(ins.source) + '</div>' : '') +
+      '</div>';
+    });
     sec.innerHTML =
       '<div class="wh-header"><span class="wh-icon">🚨</span>电商平台仓库被炸专题</div>' +
       '<div class="wh-stats">' +
@@ -140,6 +150,7 @@
       '<div id="wh-map" class="wh-map"></div>' +
       '<div class="wh-cards-title">📋 遇袭记录（最新在前）</div>' +
       '<div class="wh-cards">' + cards + '</div>' +
+      (insightCards ? '<div class="wh-cards-title">🧠 深度解读（最新信息）</div><div class="wh-insights">' + insightCards + '</div>' : '') +
       '<div class="wh-update">数据截至 ' + esc2(db.updated || '') + ' · 每日日报自动更新</div>';
     initMap(events);
   }
