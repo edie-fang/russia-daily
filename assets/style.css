@@ -146,8 +146,8 @@ html, body {
   background: #fff; border-radius: 12px; padding: 10px 6px;
   text-align: center; box-shadow: 0 1px 3px rgba(185,28,28,0.08);
 }
-.wh-num { font-size: 20px; font-weight: 800; color: #b91c1c; line-height: 1.2; }
-.wh-stat-ozon .wh-num { color: #1d4ed8; }
+.wh-num { font-size: 20px; font-weight: 800; color: #cb11ab; line-height: 1.2; }
+.wh-stat-ozon .wh-num { color: #005bff; }
 .wh-stat-cas .wh-num { font-size: 15px; color: #9f1239; }
 .wh-label { font-size: 11px; color: #7f1d1d; margin-top: 3px; }
 .wh-map {
@@ -166,8 +166,8 @@ html, body {
   font-size: 11px; font-weight: 700; color: #fff;
   padding: 2px 8px; border-radius: 8px;
 }
-.wh-badge.wh-wb { background: #dc2626; }
-.wh-badge.wh-ozon { background: #1d4ed8; }
+.wh-badge.wh-wb { background: #cb11ab; }
+.wh-badge.wh-ozon { background: #005bff; }
 .wh-date { font-size: 11px; color: var(--text-sub); }
 .wh-city { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
 .wh-casualties { font-size: 12px; color: #be123c; font-weight: 600; margin-bottom: 3px; }
