@@ -170,7 +170,7 @@
     var pts = [];
     events.forEach(function (e) {
       var isOzon = e.platform === 'ozon';
-      var color = isOzon ? '#2563eb' : '#dc2626';
+      var color = isOzon ? '#005bff' : '#cb11ab';
       L.circleMarker([e.lat, e.lng], {
         radius: 10, color: '#fff', weight: 2, fillColor: color, fillOpacity: 0.9
       }).addTo(map).bindPopup(
