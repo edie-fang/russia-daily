@@ -168,17 +168,24 @@
       attribution: '&copy; OpenStreetMap', maxZoom: 16
     }).addTo(map);
     var pts = [];
+    var usedCoords = {};
     events.forEach(function (e) {
       var isOzon = e.platform === 'ozon';
       var color = isOzon ? '#005bff' : '#cb11ab';
-      L.circleMarker([e.lat, e.lng], {
+      // 同坐标事件错开（避免相互遮挡）
+      var key = e.lat.toFixed(3) + ',' + e.lng.toFixed(3);
+      var dup = usedCoords[key] || 0;
+      usedCoords[key] = dup + 1;
+      var lat = e.lat + dup * 0.12;
+      var lng = e.lng + dup * 0.12;
+      L.circleMarker([lat, lng], {
         radius: 10, color: '#fff', weight: 2, fillColor: color, fillOpacity: 0.9
       }).addTo(map).bindPopup(
         '<b>' + (isOzon ? 'Ozon' : 'Wildberries') + '</b><br>' +
         esc2(e.cityCn || e.city) + '<br>' + esc2(e.date) + '<br>' +
         (e.casualties ? '⚠️ ' + esc2(e.casualties) : '')
       );
-      pts.push([e.lat, e.lng]);
+      pts.push([lat, lng]);
     });
     if (pts.length) { map.fitBounds(pts, { padding: [30, 30] }); }
   }
