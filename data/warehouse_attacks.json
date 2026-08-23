@@ -1,5 +1,5 @@
 {
- "updated": "2026-08-22",
+ "updated": "2026-08-23",
  "platforms": {
   "wb": "Wildberries / Russ",
   "ozon": "Ozon"
@@ -55,6 +55,6 @@
   {"id": 16, "date": "2026-08-05", "platform": "wb", "city": "Тульская область", "cityCn": "图拉州", "lat": 54.1961, "lng": 37.6182, "casualties": "1伤", "note": "WB分拣中心遇袭", "source": "综合俄媒（Forbes Russia/The Bell）"},
   {"id": 17, "date": "2026-08-07", "platform": "wb", "city": "Екатеринбург", "cityCn": "叶卡捷琳堡（再次）", "lat": 56.8389, "lng": 60.6057, "casualties": "无伤亡（全员疏散）", "note": "3架无人机落在仓库屋顶起火；距乌克兰边境超1700公里，供货改道", "source": "https://ria.ru/20260807/wildberries-2109485086.html"},
   {"id": 18, "date": "2026-08-11", "platform": "wb", "city": "Александровка", "cityCn": "亚历山德罗夫卡村（沃罗涅日州）", "lat": 51.6720, "lng": 39.1843, "casualties": "1死2伤", "note": "约15架无人机袭击WB物流中心；两处仓库起火（燃烧面积16000+20000㎡），3辆货车1辆轿车损毁", "source": "综合俄媒（Forbes Russia/The Bell）"},
-  {"id": 19, "date": "2026-08-22", "platform": "ozon", "city": "Самарская область", "cityCn": "萨马拉州", "lat": 53.1959, "lng": 50.1002, "casualties": "数人受伤", "note": "Ozon物流综合体被击中；仓库无限期停工，物流重新分配，平台整体运营正常。此前Ozon仓储未受损（47个履约中心+170个分拣中心分散布局）", "source": "https://ria.ru/20260822/ataka-2112419264.html"}
+  {"id": 19, "date": "2026-08-22", "platform": "ozon", "city": "Чапаевск", "cityCn": "恰帕耶夫斯克（萨马拉州）", "lat": 52.9770, "lng": 49.7086, "casualties": "1死（新库伊比雪夫斯克一老年女性）、两市数人受伤", "note": "数十架无人机大规模袭击萨马拉州，Ozon恰帕耶夫斯克物流综合体被击中，500员工数分钟内疏散，仓库无限期停工；州长证实袭击规模巨大。Ozon 8-22宣布卖家支持：免受损仓仓储费、免罚款至9-22、萨马拉集群销售费率8-30起降3%。距边境约900公里", "source": "https://lenta.ru/news/2026/08/22/rossiyskiy-gubernator-raskryl-podrobnosti-ataki-vsu-na-logisticheskiy-kompleks-ozon/"}
  ]
 }
