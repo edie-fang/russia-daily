@@ -190,3 +190,43 @@ html, body {
 @media (max-width: 400px) {
   .wh-stats { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ===== 周度复盘板块 ===== */
+.wk-sec-title {
+  margin: 18px 4px 10px;
+  font-size: 16px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 6px;
+}
+.wk-sec-icon { font-size: 18px; }
+.wk-sec-count {
+  margin-left: auto; font-size: 11px; font-weight: 400; color: var(--text-sub);
+  background: var(--card-bg); border-radius: 10px; padding: 2px 8px;
+}
+.wk-card {
+  background: var(--card-bg); border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.wk-table-wrap { overflow-x: auto; }
+.wk-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.wk-table th, .wk-table td {
+  padding: 7px 8px; text-align: left; border-bottom: 1px solid var(--border);
+  vertical-align: top; line-height: 1.5;
+}
+.wk-table thead th {
+  background: #f7f7f7; color: var(--text-sub); font-weight: 600;
+  white-space: nowrap; position: sticky; top: 0;
+}
+.wk-table td.wk-k { font-weight: 600; color: var(--text); white-space: nowrap; }
+.wk-trend { border-left: 3px solid var(--accent); }
+.wk-trend-title { font-size: 14px; font-weight: 700; color: #065f46; margin-bottom: 6px; }
+.wk-trend-text { font-size: 13px; color: #444; line-height: 1.7; }
+.wk-meta-line { font-size: 12px; color: var(--text-sub); line-height: 1.7; padding: 2px 0; }
+/* 索引页周度复盘分区 */
+.weekly-sec-title {
+  margin: 14px 4px 10px; font-size: 15px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 6px;
+}
+.weekly-sec-title .wk-sec-count { margin-left: auto; }
+.history-item.weekly-item { border-left: 3px solid #7c3aed; }
+.history-item.weekly-item a { color: #5b21b6; }
