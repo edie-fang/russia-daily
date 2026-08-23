@@ -1,0 +1,40 @@
+{
+  "updated": "2026-08-23 23:00",
+  "indicators": [
+    {"key": "usdRub", "name": "美元/卢布", "value": "83.35", "unit": "", "trend": "down", "note": "官方汇率 8/21，周初场外85.44→破84", "good": "down"},
+    {"key": "cnyRub", "name": "人民币/卢布", "value": "12.69", "unit": "", "trend": "up", "note": "8/17 场外，2025年2月以来最高", "good": "up"},
+    {"key": "brent", "name": "Brent 油价", "value": "94.71", "unit": "$/桶", "trend": "up", "note": "8/20 盘中峰值，全周+8.4%", "good": "neutral"},
+    {"key": "keyRate", "name": "央行关键利率", "value": "14", "unit": "%", "trend": "flat", "note": "9月有降息窗口，10/23或暂停", "good": "neutral"},
+    {"key": "moex", "name": "莫交所指数", "value": "2148", "unit": "点", "trend": "up", "note": "8/18 收，周内破2100后反弹+2.5%", "good": "neutral"},
+    {"key": "euGas", "name": "欧洲天然气", "value": "800+", "unit": "$/千m³", "trend": "up", "note": "8/21 破800，3月19日以来首次", "good": "neutral"}
+  ],
+  "daily": {"date": "2026-08-23", "title": "今日日报", "note": "Ozon奥伦堡遇袭已收录专题"},
+  "weekly": {"date": "2026-08-21", "title": "第34周 周度复盘", "note": "42条 · 电商10/时政9/经济16/美妆2/电器3"},
+  "milestones": [
+    {"date": "08-28", "text": "Ozon 第三次调佣传闻节点（全周未获官方证实，继续盯）", "level": "watch"},
+    {"date": "09-01", "text": "数字卢布全面商用：WB/Ozon 支付上线，130+银行接入", "level": "critical"},
+    {"date": "09月", "text": "炼厂检修+白俄供应骤降，燃料短缺风险窗口", "level": "warn"},
+    {"date": "09月", "text": "央行利率会议：燃油危机缓解则有降息空间", "level": "critical"},
+    {"date": "09-18~20", "text": "杜马选举统一投票日；境外投票挑衅预警中", "level": "watch"},
+    {"date": "09-19", "text": "卢克石油海外资产出售许可到期（OFAC）", "level": "watch"},
+    {"date": "10-23", "text": "央行利率会议：Garda Capital 预测或暂停降息", "level": "watch"}
+  ],
+  "todos": [
+    "跟踪 АКИТ 10 项遭袭卖家支持措施的联邦落地细则",
+    "WB/Ozon 数字卢布回款链路与费率变化（9/1 上线后首周）",
+    "圣彼得堡受损企业专项贷款申请条件（100+生产企业）",
+    "芳烃出口禁令结论（苯/苯酚分歧未决）",
+    "Ozon 奥伦堡仓受损卖家补偿方案（参照恰帕耶夫斯克六条）"
+  ],
+  "meeting": {
+    "title": "周会规则",
+    "rules": ["30-35 分钟硬停", "三不：不念数据 / 不讲非标细节 / 不闲聊", "PDCA 闭环：上周承诺先过一遍"]
+  },
+  "system": [
+    {"name": "每日日报", "schedule": "每天 10:00", "status": "ok", "note": "8/23 已推送"},
+    {"name": "周度复盘", "schedule": "周五 22:00", "status": "ok", "note": "W34 已上线网页板块"},
+    {"name": "突发扫描", "schedule": "每天 17:30/21:30", "status": "ok", "note": "8/23 新建，奥伦堡首报"},
+    {"name": "推送补发 watchdog", "schedule": "10:40/17:40/21:40", "status": "ok", "note": "12h窗口+防重复"},
+    {"name": "微信 gateway", "schedule": "常驻", "status": "warn", "note": "8/23 晚 iLink 服务端限流，明早自动恢复"}
+  ]
+}
