@@ -386,8 +386,20 @@ html, body {
   font-size: 10px; padding: 0 5px; margin-left: 4px;
 }
 .wbk-add { display: flex; gap: 6px; margin: 6px 0 10px; }
+.wbk-add select {
+  width: 72px; flex-shrink: 0; border: none; border-radius: 10px;
+  background: #f2f2f5; padding: 6px 4px; font-size: 13px; color: var(--text);
+}
 .wbk-add input[type="text"] { flex: 1; min-width: 0; }
 .wbk-add input[type="date"] { width: 128px; flex-shrink: 0; color: #666; }
+
+/* 分区小标题（依次排列：电商→外贸→个人） */
+.wbk-subsec {
+  font-size: 14px; font-weight: 700; color: var(--text);
+  margin: 14px 2px 4px; padding-top: 10px;
+  border-top: 1px dashed #e5e5ea;
+}
+.wbk-add + .wbk-subsec { margin-top: 4px; padding-top: 0; border-top: none; }
 .wbk-addbtn {
   flex-shrink: 0; border: none; border-radius: 8px; background: var(--accent); color: #fff;
   font-size: 13px; font-weight: 600; padding: 0 14px; cursor: pointer;
