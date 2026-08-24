@@ -306,3 +306,46 @@ html, body {
 .wbk-sys:last-child { border-bottom: none; }
 .wbk-sys-sch { font-size: 11px; color: var(--text-sub); }
 .wbk-sys-note { font-size: 11px; color: #888; margin-left: auto; }
+/* 口令锁屏 */
+.wbk-lock {
+  max-width: 320px; margin: 80px auto; text-align: center;
+  background: var(--card-bg); border-radius: 16px; padding: 28px 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.wbk-lock-icon { font-size: 34px; }
+.wbk-lock-title { font-size: 17px; font-weight: 700; margin-top: 8px; }
+.wbk-lock-sub { font-size: 12px; color: var(--text-sub); margin: 6px 0 14px; }
+.wbk-lock input {
+  width: 100%; border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px 12px;
+  font-size: 16px; text-align: center; background: #fafafa; outline: none; margin-bottom: 12px;
+}
+.wbk-lock input:focus { border-color: var(--accent); background: #fff; }
+.wbk-lock-err { font-size: 12px; color: #dc2626; margin-top: 10px; min-height: 16px; }
+
+/* ===== 桌面端适配（电脑+手机双端） ===== */
+@media (min-width: 820px) {
+  /* 日报/周报页：限宽居中，保持手机版式不变 */
+  body:not(.wbk-page) .nav, body:not(.wbk-page) .stats,
+  body:not(.wbk-page) .list, body:not(.wbk-page) .history-list,
+  body:not(.wbk-page) .hint, body:not(.wbk-page) .warehouse-section,
+  body:not(.wbk-page) .footer-actions {
+    max-width: 720px; margin-left: auto; margin-right: auto;
+  }
+  body:not(.wbk-page) .list, body:not(.wbk-page) .history-list { padding-bottom: 60px; }
+  body:not(.wbk-page) .warehouse-section { margin-top: 10px; margin-bottom: 16px; }
+  body:not(.wbk-page) .footer-actions { left: 50%; transform: translateX(-50%); width: 720px; }
+  /* 工作台：宽版布局 */
+  .wbk-page .nav > * { max-width: none; }
+  .wbk-page .wbk-wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 60px; }
+  .wbk-page .wbk-sec { font-size: 18px; margin-top: 26px; }
+  .wbk-page .wbk-ind-grid { grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .wbk-page .wbk-ind-val { font-size: 22px; }
+  .wbk-page .wbk-links { flex-direction: row; }
+  .wbk-page .wbk-links .wbk-link { flex: 1; }
+  .wbk-page .wbk-desk-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+  .wbk-page .wbk-card, .wbk-page .wbk-link, .wbk-page .wbk-ind { padding: 16px 18px; }
+  .wbk-page .wbk-wh { padding: 16px 18px; }
+}
+@media (min-width: 820px) and (max-width: 1100px) {
+  .wbk-page .wbk-ind-grid { grid-template-columns: repeat(3, 1fr); }
+}
