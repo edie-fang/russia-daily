@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>待办事项 · 电商/外贸/个人</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+/* 待办页：分类依次排列，全部显示，不折叠无标签切换 */
+.todo-cat { margin: 12px 12px 4px; }
+.todo-cat-head {
+  font-size: 15px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; background: var(--card-bg);
+  border-radius: 12px 12px 0 0; border-bottom: 2px solid #e5e5ea;
+}
+.todo-cat-count { font-size: 11px; color: var(--text-sub); font-weight: 400; margin-left: auto; }
+.todo-list { background: var(--card-bg); border-radius: 0 0 12px 12px; overflow: hidden; margin-bottom: 14px; }
+.todo-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 14px; border-bottom: 1px solid #f2f2f5;
+}
+.todo-row:last-child { border-bottom: none; }
+.todo-no { font-size: 12px; font-weight: 700; color: #b91c1c; min-width: 20px; line-height: 1.6; flex-shrink: 0; }
+.todo-txt { font-size: 14px; color: var(--text); line-height: 1.6; }
+.todo-done .todo-txt { text-decoration: line-through; color: var(--text-sub); }
+.todo-done .todo-no { color: #a8a8a8; }
+.todo-empty { padding: 14px; font-size: 13px; color: var(--text-sub); text-align: center; }
+.todo-foot { padding: 8px 16px 40px; font-size: 11px; color: var(--text-sub); text-align: center; }
+</style>
+</head>
+<body>
+<div class="nav">
+  <div class="title">✅ 待办事项</div>
+  <div class="date" id="updated">—</div>
+  <a href="./">日报</a>
+</div>
+<div id="app"><div class="empty">加载中…</div></div>
+<div class="todo-foot">线上同步 · 任何设备打开都是同一份 · 更新：在 Hermes 对话里说"加个待办"</div>
+<script>
+(function () {
+  'use strict';
+  var app = document.getElementById('app');
+  fetch('data/todos.json?t=' + Date.now()).then(function (r) { return r.json(); }).then(function (db) {
+    document.getElementById('updated').textContent = db.updated || '';
+    var cats = db.categories || [];
+    var items = db.items || [];
+    var html = '';
+    cats.forEach(function (c) {
+      var list = items.filter(function (it) { return it.cat === c.id; });
+      var rows = '';
+      if (!list.length) {
+        rows = '<div class="todo-empty">暂无待办</div>';
+      } else {
+        list.forEach(function (it, i) {
+          var done = it.status === 'done';
+          rows += '<div class="todo-row' + (done ? ' todo-done' : '') + '">' +
+            '<span class="todo-no">' + (i + 1) + '.</span>' +
+            '<span class="todo-txt">' + esc(it.text) + '</span>' +
+          '</div>';
+        });
+      }
+      html += '<div class="todo-cat">' +
+        '<div class="todo-cat-head">' + (c.icon || '') + ' ' + esc(c.name) +
+        '<span class="todo-cat-count">' + list.length + ' 项</span></div>' +
+        '<div class="todo-list">' + rows + '</div>' +
+      '</div>';
+    });
+    app.innerHTML = html;
+  }).catch(function () {
+    app.innerHTML = '<div class="empty">数据加载失败</div>';
+  });
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+})();
+</script>
+</body>
+</html>
