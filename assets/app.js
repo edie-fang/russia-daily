@@ -144,8 +144,7 @@
     todos.forEach(function (t, i) {
       var done = t.status === 'done';
       todoHtml += '<div class="wh-todo' + (done ? ' wh-todo-done' : '') + '">' +
-        '<span class="wh-todo-icon">' + esc2(t.icon || '•') + '</span>' +
-        '<span class="wh-todo-num">' + (i + 1) + '</span>' +
+        '<span class="wh-todo-num">' + (i + 1) + '.</span>' +
         '<span class="wh-todo-text">' + esc2(t.text) + '</span>' +
       '</div>';
     });
