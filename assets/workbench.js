@@ -16,8 +16,8 @@
   var REPO = 'edie-fang/russia-daily';
 
   var SECTIONS = [
-    {id: 'trade', name: '外贸'},
     {id: 'ecom', name: '电商'},
+    {id: 'trade', name: '外贸'},
     {id: 'personal', name: '个人'}
   ];
 
@@ -103,8 +103,6 @@
   }
 
   /* ================= 待办：本地缓存 ================= */
-  var curSection = 'trade';
-  var doneOpen = false;
 
   function migrateOld(t) {
     /* v1（品牌板块）→ v2：全部并入电商 */
@@ -247,49 +245,46 @@
     var h = '<div class="wbk-sec wbk-sec-todo">📌 待办事项 <span class="wbk-todo-total">' + totalPending(t) + ' 项进行中</span></div>';
     h += '<div class="wbk-card wbk-todo-card">';
 
-    h += '<div class="wbk-tabs">';
-    SECTIONS.forEach(function (s) {
-      var n = pendingCount(t, s.id);
-      h += '<button class="wbk-tab' + (s.id === curSection ? ' on' : '') + '" data-sec="' + s.id + '">' +
-        esc(s.name) + (n ? '<i>' + n + '</i>' : '') + '</button>';
-    });
-    h += '</div>';
-
     h += '<div class="wbk-add">' +
+      '<select id="tdSec">' + SECTIONS.map(function (s) { return '<option value="' + s.id + '">' + esc(s.name) + '</option>'; }).join('') + '</select>' +
       '<input id="tdText" type="text" placeholder="输入待办事项…" maxlength="120">' +
       '<input id="tdDue" type="date" title="目标完成期限">' +
       '<button class="wbk-addbtn" id="tdAdd">+ 添加</button></div>';
 
-    var items = (t[curSection] || []).filter(function (x) { return !x.done; });
-    items.sort(function (a, b) {
-      var da = a.due || '9999', db = b.due || '9999';
-      return da < db ? -1 : da > db ? 1 : a.created - b.created;
-    });
-    if (!items.length) {
-      h += '<div class="wbk-todo-empty">本板块暂无进行中事项</div>';
-    }
-    items.forEach(function (x) {
-      h += '<div class="wbk-ti">' +
-        '<button class="wbk-done-btn" data-id="' + x.id + '" title="标记完成">✓</button>' +
-        '<div class="wbk-ti-main"><div class="wbk-ti-text">' + esc(x.text) + '</div>' +
-        '<div class="wbk-ti-meta">建 ' + fmtDT(x.created) + ' · ' + dueBadge(x.due) + '</div></div>' +
-        '<button class="wbk-del-btn" data-id="' + x.id + '" title="删除">×</button></div>';
-    });
-
-    var done = (t[curSection] || []).filter(function (x) { return x.done; });
-    done.sort(function (a, b) { return b.doneAt - a.doneAt; });
-    if (done.length) {
-      h += '<div class="wbk-done-toggle" id="tdToggle">' + (doneOpen ? '▾' : '▸') + ' 已完成（' + done.length + '）' + (doneOpen ? '' : '，点击展开') + '</div>';
-      h += '<div class="wbk-done-list"' + (doneOpen ? '' : ' style="display:none"') + '>';
-      done.forEach(function (x) {
-        h += '<div class="wbk-ti wbk-ti-done">' +
-          '<div class="wbk-ti-main"><div class="wbk-ti-text">' + esc(x.text) + '</div>' +
-          '<div class="wbk-ti-meta">建 ' + fmtDT(x.created) + ' · 完成于 ' + fmtDT(x.doneAt) + '</div></div>' +
-          '<button class="wbk-re-btn" data-id="' + x.id + '" title="恢复为进行中">↩</button>' +
-          '<button class="wbk-del-btn" data-id="' + x.id + '" title="删除">×</button></div>';
+    /* 全部分区依次排列：电商 → 外贸 → 个人（不用标签切换隐藏） */
+    SECTIONS.forEach(function (s) {
+      var items = (t[s.id] || []).filter(function (x) { return !x.done; });
+      items.sort(function (a, b) {
+        var da = a.due || '9999', db = b.due || '9999';
+        return da < db ? -1 : da > db ? 1 : a.created - b.created;
       });
-      h += '</div>';
-    }
+      h += '<div class="wbk-subsec">' + esc(s.name) + '（' + items.length + '）</div>';
+      if (!items.length) {
+        h += '<div class="wbk-todo-empty">暂无进行中事项</div>';
+      }
+      items.forEach(function (x) {
+        h += '<div class="wbk-ti">' +
+          '<button class="wbk-done-btn" data-sec="' + s.id + '" data-id="' + x.id + '" title="标记完成">✓</button>' +
+          '<div class="wbk-ti-main"><div class="wbk-ti-text">' + esc(x.text) + '</div>' +
+          '<div class="wbk-ti-meta">建 ' + fmtDT(x.created) + ' · ' + dueBadge(x.due) + '</div></div>' +
+          '<button class="wbk-del-btn" data-sec="' + s.id + '" data-id="' + x.id + '" title="删除">×</button></div>';
+      });
+
+      var done = (t[s.id] || []).filter(function (x) { return x.done; });
+      done.sort(function (a, b) { return b.doneAt - a.doneAt; });
+      if (done.length) {
+        h += '<div class="wbk-done-toggle" data-sec="' + s.id + '">▸ 已完成（' + done.length + '，点击展开）</div>';
+        h += '<div class="wbk-done-list" style="display:none" data-sec="' + s.id + '">';
+        done.forEach(function (x) {
+          h += '<div class="wbk-ti wbk-ti-done">' +
+            '<div class="wbk-ti-main"><div class="wbk-ti-text">' + esc(x.text) + '</div>' +
+            '<div class="wbk-ti-meta">建 ' + fmtDT(x.created) + ' · 完成于 ' + fmtDT(x.doneAt) + '</div></div>' +
+            '<button class="wbk-re-btn" data-sec="' + s.id + '" data-id="' + x.id + '" title="恢复为进行中">↩</button>' +
+            '<button class="wbk-del-btn" data-sec="' + s.id + '" data-id="' + x.id + '" title="删除">×</button></div>';
+        });
+        h += '</div>';
+      }
+    });
 
     h += '<div class="wbk-todo-foot"><span id="tdExport">⤒ 备份</span><span id="tdImport">⤓ 恢复</span><span id="tdSync" class="wbk-sync">💻 本机</span></div>';
     h += '</div>';
@@ -313,24 +308,17 @@
   }
 
   function wireTodo() {
-    var tabs = app.querySelectorAll('.wbk-tab');
-    for (var i = 0; i < tabs.length; i++) {
-      (function (btn) {
-        btn.addEventListener('click', function () {
-          curSection = btn.getAttribute('data-sec');
-          refreshTodo();
-        });
-      })(tabs[i]);
-    }
     var addBtn = document.getElementById('tdAdd');
     var textEl = document.getElementById('tdText');
     var dueEl = document.getElementById('tdDue');
+    var secEl = document.getElementById('tdSec');
     function doAdd() {
       var v = (textEl.value || '').trim();
       if (!v) { textEl.focus(); return; }
+      var sec = secEl ? secEl.value : SECTIONS[0].id;
       mutate(function (t) {
-        if (!t[curSection]) { t[curSection] = []; }
-        t[curSection].push({
+        if (!t[sec]) { t[sec] = []; }
+        t[sec].push({
           id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
           text: v,
           created: Date.now(),
@@ -348,8 +336,9 @@
     for (var j = 0; j < doneBtns.length; j++) {
       (function (btn) {
         btn.addEventListener('click', function () {
+          var sec = btn.getAttribute('data-sec');
           mutate(function (t) {
-            (t[curSection] || []).forEach(function (x) {
+            (t[sec] || []).forEach(function (x) {
               if (x.id === btn.getAttribute('data-id')) { x.done = true; x.doneAt = Date.now(); }
             });
           });
@@ -360,8 +349,9 @@
     for (var k = 0; k < reBtns.length; k++) {
       (function (btn) {
         btn.addEventListener('click', function () {
+          var sec = btn.getAttribute('data-sec');
           mutate(function (t) {
-            (t[curSection] || []).forEach(function (x) {
+            (t[sec] || []).forEach(function (x) {
               if (x.id === btn.getAttribute('data-id')) { x.done = false; x.doneAt = 0; }
             });
           });
@@ -373,15 +363,25 @@
       (function (btn) {
         btn.addEventListener('click', function () {
           if (!confirm('删除这条事项？')) { return; }
+          var sec = btn.getAttribute('data-sec');
           mutate(function (t) {
-            t[curSection] = (t[curSection] || []).filter(function (x) { return x.id !== btn.getAttribute('data-id'); });
+            t[sec] = (t[sec] || []).filter(function (x) { return x.id !== btn.getAttribute('data-id'); });
           });
         });
       })(delBtns[m]);
     }
-    var tg = document.getElementById('tdToggle');
-    if (tg) {
-      tg.addEventListener('click', function () { doneOpen = !doneOpen; refreshTodo(); });
+    var toggles = app.querySelectorAll('.wbk-done-toggle');
+    for (var tg = 0; tg < toggles.length; tg++) {
+      (function (el) {
+        el.addEventListener('click', function () {
+          var sec = el.getAttribute('data-sec');
+          var list = app.querySelector('.wbk-done-list[data-sec="' + sec + '"]');
+          if (!list) { return; }
+          var open = list.style.display !== 'none';
+          list.style.display = open ? 'none' : '';
+          el.textContent = (open ? '▸ 已完成' : '▾ 已完成') + el.textContent.replace(/^[▸▾] 已完成/, '');
+        });
+      })(toggles[tg]);
     }
     var ex = document.getElementById('tdExport');
     if (ex) {
