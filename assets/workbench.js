@@ -57,6 +57,67 @@
   }
   function b64utf8(s) { return btoa(unescape(encodeURIComponent(s))); }
 
+  /* ================= 生物识别（WebAuthn / Windows Hello） ================= */
+  /* 绑定逻辑：必须先用口令成功登录一次才能绑定本设备；
+     陌生人没有已绑定的凭证，无法通过人脸/指纹直接登录 */
+  var BIO_KEY = 'wbk_bio_v1';
+  function bioSupported() {
+    return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create);
+  }
+  function bioLoad() { try { return JSON.parse(localStorage.getItem(BIO_KEY) || 'null'); } catch (e) { return null; } }
+  function bioSave(o) { try { localStorage.setItem(BIO_KEY, JSON.stringify(o)); } catch (e) {} }
+  function bioClear() { try { localStorage.removeItem(BIO_KEY); } catch (e) {} }
+  function randBytes(n) { var b = new Uint8Array(n); crypto.getRandomValues(b); return b; }
+  function bufToB64(buf) {
+    var bin = ''; var bytes = new Uint8Array(buf);
+    for (var i = 0; i < bytes.length; i++) { bin += String.fromCharCode(bytes[i]); }
+    return btoa(bin);
+  }
+  function b64ToBuf(b64) {
+    var bin = atob(b64); var b = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) { b[i] = bin.charCodeAt(i); }
+    return b.buffer;
+  }
+  function bioBind(pc, onDone) {
+    if (!bioSupported()) { onDone && onDone('此浏览器不支持生物识别（请用电脑 Chrome/Edge）'); return; }
+    var dk = bufToB64(randBytes(32));
+    navigator.credentials.create({
+      publicKey: {
+        challenge: randBytes(32),
+        rp: { name: 'Edie工作台' },
+        user: { id: randBytes(16), name: 'edie-workbench', displayName: 'Edie' },
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+        authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'preferred' },
+        attestation: 'none',
+        timeout: 60000
+      }
+    }).then(function (cred) {
+      bioSave({ credId: bufToB64(cred.rawId), encPass: xorEncode(pc, dk), dk: dk });
+      onDone && onDone(null, '✅ 已绑定本设备，下次打开可直接用人脸/指纹解锁');
+    }).catch(function (e) {
+      onDone && onDone('绑定取消或失败（' + ((e && e.name) || '未知') + '）');
+    });
+  }
+  function bioUnlock() {
+    var b = bioLoad();
+    if (!b) { return; }
+    navigator.credentials.get({
+      publicKey: {
+        challenge: randBytes(32),
+        allowCredentials: [{ type: 'public-key', id: b64ToBuf(b.credId), transports: ['internal'] }],
+        userVerification: 'required',
+        timeout: 60000
+      }
+    }).then(function () {
+      try {
+        var pc = xorDecode(b.encPass, b.dk);
+        tryUnlock(pc, true);
+      } catch (e) { showLock('生物识别数据异常，请用口令登录'); }
+    }).catch(function () {
+      showLock('人脸/指纹验证未通过，可用口令登录');
+    });
+  }
+
   function tryUnlock(pc, remember) {
     fetch('../data/workbench_enc.json')
       .then(function (r) { return r.json(); })
@@ -75,10 +136,43 @@
           .then(function (wh) {
             render(data, wh);
             initSync();
+            offerBioBind(pc);
           });
       })
       .catch(function () { showLock('数据加载失败，请稍后刷新'); });
   }
+
+  /* 解锁成功后：若本设备支持生物识别且未绑定，提示绑定 */
+  function offerBioBind(pc) {
+    if (!bioSupported() || bioLoad()) { return; }
+    var bar = document.createElement('div');
+    bar.className = 'wbk-bio-bar';
+    bar.innerHTML = '<span>💡 本设备支持人脸/指纹解锁，绑定后下次一键进入（无需再输口令）</span>' +
+      '<button id="bioBindBtn">👆 绑定本设备</button><button id="bioSkipBtn" class="wbk-bio-skip">暂不</button>';
+    app.insertBefore(bar, app.firstChild);
+    document.getElementById('bioBindBtn').addEventListener('click', function () {
+      bioBind(pc, function (err, ok) {
+        bar.innerHTML = '<span>' + esc(err || ok) + '</span>';
+        if (!err) { setTimeout(function () { bar.remove(); }, 3000); }
+      });
+    });
+    document.getElementById('bioSkipBtn').addEventListener('click', function () { bar.remove(); });
+  }
+
+  /* 锁屏界面注入：已绑定设备显示"人脸/指纹解锁"按钮 */
+  function injectBioButton() {
+    if (!bioSupported() || !bioLoad()) { return; }
+    var lock = document.getElementById('lock');
+    if (!lock || document.getElementById('bioUnlockBtn')) { return; }
+    var btn = document.createElement('button');
+    btn.id = 'bioUnlockBtn';
+    btn.className = 'btn wbk-bio-btn';
+    btn.textContent = '👆 人脸 / 指纹解锁';
+    btn.addEventListener('click', bioUnlock);
+    var err = document.getElementById('pcErr');
+    lock.insertBefore(btn, err || null);
+  }
+  injectBioButton();
 
   function showLock(err) {
     var lock = document.getElementById('lock');
@@ -173,6 +267,43 @@
       .catch(function () {
         setSync(ghToken ? 'error' : 'local', ghToken ? '云端读取失败（本机数据可用）' : '仅本机（未配置同步）');
       });
+  }
+
+  /* ================= 云端同步配置（自助写入加密 PAT） ================= */
+  function cfgSync() {
+    if (!passcode) { return; }
+    var pat = prompt(
+      '配置云端同步（多设备共享待办）：\n\n' +
+      '1. 打开 github.com/settings/personal-access-tokens/new\n' +
+      '2. 仓库选择 russia-daily，权限勾 Contents: Read and write\n' +
+      '3. 生成后把 PAT 粘贴到这里：'
+    );
+    if (!pat || !pat.trim()) { return; }
+    pat = pat.trim();
+    var encJson = JSON.stringify({ enc: xorEncode(pat, passcode) });
+    var apiBase = 'https://api.github.com/repos/' + REPO + '/contents/data/gh_token_enc.json';
+    setSync('syncing', '写入同步配置…');
+    fetch(apiBase, { headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github+json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (info) {
+        var body = { message: 'workbench: configure sync token', content: b64utf8(encJson), branch: 'main' };
+        if (info && info.sha) { body.sha = info.sha; }
+        return fetch(apiBase, {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+      })
+      .then(function (r) {
+        if (r && (r.status === 200 || r.status === 201)) {
+          ghToken = pat;
+          setSync('synced', '云端同步已配置 ✓');
+          pushTodos();
+        } else {
+          setSync('error', '写入失败：请检查 PAT 权限');
+        }
+      })
+      .catch(function () { setSync('error', '网络错误，稍后重试'); });
   }
 
   var pushTimer = null;
@@ -286,7 +417,7 @@
       }
     });
 
-    h += '<div class="wbk-todo-foot"><span id="tdExport">⤒ 备份</span><span id="tdImport">⤓ 恢复</span><span id="tdSync" class="wbk-sync">💻 本机</span></div>';
+    h += '<div class="wbk-todo-foot"><span id="tdExport">⤒ 备份</span><span id="tdImport">⤓ 恢复</span><span id="tdSyncCfg">⚙️ 配置同步</span><span id="tdSync" class="wbk-sync">💻 本机</span></div>';
     h += '</div>';
     return h;
   }
@@ -394,6 +525,8 @@
         }
       });
     }
+    var cfg = document.getElementById('tdSyncCfg');
+    if (cfg) { cfg.addEventListener('click', cfgSync); }
     var im = document.getElementById('tdImport');
     if (im) {
       im.addEventListener('click', function () {
