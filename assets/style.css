@@ -400,6 +400,23 @@ html, body {
   border-top: 1px dashed #e5e5ea;
 }
 .wbk-add + .wbk-subsec { margin-top: 4px; padding-top: 0; border-top: none; }
+
+/* 生物识别 */
+.wbk-bio-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: linear-gradient(135deg, #eff6ff, #e0eaff);
+  border: 1px solid #bfdbfe; border-radius: 12px;
+  padding: 10px 12px; margin: 10px 12px; font-size: 13px; color: #1e40af;
+}
+.wbk-bio-bar button {
+  border: none; border-radius: 8px; background: #2563eb; color: #fff;
+  font-size: 12px; font-weight: 600; padding: 6px 12px; cursor: pointer;
+}
+.wbk-bio-bar .wbk-bio-skip { background: #94a3b8; }
+.wbk-bio-btn {
+  background: #2563eb !important; color: #fff !important;
+  margin-top: 8px; font-size: 14px !important;
+}
 .wbk-addbtn {
   flex-shrink: 0; border: none; border-radius: 8px; background: var(--accent); color: #fff;
   font-size: 13px; font-weight: 600; padding: 0 14px; cursor: pointer;
