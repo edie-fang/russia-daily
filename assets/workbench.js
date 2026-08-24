@@ -1,7 +1,9 @@
-/* Edie的个人工作台 渲染逻辑（私有版 v1.2）
-   - 数据加密存放：../data/workbench_enc.json（XOR(口令)+base64）
-   - 待办事项：localStorage 本地持久化（wbk_todos_v1），按业务板块分栏，
-     创建时间自动记录，期限手动填，完成自动归档折叠，支持备份/恢复
+/* Edie的个人工作台 渲染逻辑（私有版 v1.3）
+   - 工作台数据：../data/workbench_enc.json（XOR(口令)+base64）
+   - 待办事项：板块 = 外贸/电商/个人
+     · 云端同步：../data/todos_enc.json（同一口令加密，GitHub 仓库为同步中枢）
+     · 写回授权：../data/gh_token_enc.json（细粒度 PAT，同口令加密；未配置则仅本机）
+     · localStorage 作本地缓存，离线不丢；远端为各设备同步源
    - 专题数据（公开信息）读 ../data/warehouse_attacks.json */
 (function () {
   'use strict';
@@ -9,20 +11,20 @@
   if (!app) { return; }
 
   var LS_KEY = 'wbk_pc_v1';
-  var TODO_KEY = 'wbk_todos_v1';
+  var TODO_KEY = 'wbk_todos_v2';
+  var TODO_KEY_OLD = 'wbk_todos_v1';
+  var REPO = 'edie-fang/russia-daily';
 
-  /* 业务板块（品牌矩阵 + 综合） */
   var SECTIONS = [
-    {id: 'general', name: '综合'},
-    {id: 'mosai', name: 'mosai'},
-    {id: 'mosai_pc', name: '莫赛(个护)'},
-    {id: 'deeplight', name: 'deeplight'},
-    {id: 'pipolux', name: 'pipolux'},
-    {id: 'dxmhome', name: 'DXMhome'},
-    {id: 'entonhome', name: 'entonhome'},
-    {id: 'mosaihome', name: 'mosaihome'},
-    {id: 'deepclean', name: 'deepclean'}
+    {id: 'trade', name: '外贸'},
+    {id: 'ecom', name: '电商'},
+    {id: 'personal', name: '个人'}
   ];
+
+  var passcode = null;      // 解锁后持有的口令（用于加解密）
+  var ghToken = null;       // 细粒度 PAT（可写）；null = 仅本机模式
+  var syncState = 'local';  // local | syncing | synced | error | pending
+  var syncText = '本机';
 
   document.getElementById('today').textContent =
     new Date().toLocaleDateString('zh-CN', {year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'});
@@ -33,15 +35,27 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  /* ===== XOR 加解密（与 encode_workbench.py 同算法） ===== */
+  function xorBytes(bytes, pc) {
+    var key = new TextEncoder().encode(pc);
+    var out = new Uint8Array(bytes.length);
+    for (var i = 0; i < bytes.length; i++) { out[i] = bytes[i] ^ key[i % key.length]; }
+    return out;
+  }
   function xorDecode(b64, pc) {
     var bin = atob(b64);
-    var key = new TextEncoder().encode(pc);
-    var out = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) {
-      out[i] = bin.charCodeAt(i) ^ key[i % key.length];
-    }
-    return new TextDecoder('utf-8').decode(out);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) { bytes[i] = bin.charCodeAt(i); }
+    return new TextDecoder('utf-8').decode(xorBytes(bytes, pc));
   }
+  function xorEncode(text, pc) {
+    var bytes = new TextEncoder().encode(text);
+    var enc = xorBytes(bytes, pc);
+    var bin = '';
+    for (var i = 0; i < enc.length; i++) { bin += String.fromCharCode(enc[i]); }
+    return btoa(bin);
+  }
+  function b64utf8(s) { return btoa(unescape(encodeURIComponent(s))); }
 
   function tryUnlock(pc, remember) {
     fetch('../data/workbench_enc.json')
@@ -55,9 +69,13 @@
           return;
         }
         if (remember) { try { localStorage.setItem(LS_KEY, pc); } catch (e) {} }
+        passcode = pc;
         fetch('../data/warehouse_attacks.json').then(function (r) { return r.json(); })
           .catch(function () { return null; })
-          .then(function (wh) { render(data, wh); });
+          .then(function (wh) {
+            render(data, wh);
+            initSync();
+          });
       })
       .catch(function () { showLock('数据加载失败，请稍后刷新'); });
   }
@@ -84,19 +102,119 @@
     tryUnlock(saved, false);
   }
 
-  /* ================= 待办事项模块 ================= */
-  var curSection = 'general';
+  /* ================= 待办：本地缓存 ================= */
+  var curSection = 'trade';
   var doneOpen = false;
 
-  function loadTodos() {
-    try {
-      var t = JSON.parse(localStorage.getItem(TODO_KEY) || '{}');
-      return typeof t === 'object' && t ? t : {};
-    } catch (e) { return {}; }
+  function migrateOld(t) {
+    /* v1（品牌板块）→ v2：全部并入电商 */
+    var old = null;
+    try { old = JSON.parse(localStorage.getItem(TODO_KEY_OLD) || 'null'); } catch (e) {}
+    if (!old) { return t; }
+    var merged = false;
+    Object.keys(old).forEach(function (sec) {
+      (old[sec] || []).forEach(function (x) {
+        if (!t.ecom) { t.ecom = []; }
+        t.ecom.push(x);
+        merged = true;
+      });
+    });
+    if (merged) {
+      try { localStorage.removeItem(TODO_KEY_OLD); } catch (e) {}
+    }
+    return t;
   }
-  function saveTodos(t) {
+  function loadTodos() {
+    var t = {};
+    try {
+      t = JSON.parse(localStorage.getItem(TODO_KEY) || '{}') || {};
+    } catch (e) { t = {}; }
+    if (!localStorage.getItem(TODO_KEY)) { t = migrateOld(t); }
+    return t;
+  }
+  function saveTodosLocal(t) {
     try { localStorage.setItem(TODO_KEY, JSON.stringify(t)); } catch (e) {}
   }
+
+  /* ================= 待办：云端同步 ================= */
+  function setSync(state, text) {
+    syncState = state;
+    syncText = text;
+    var el = document.getElementById('tdSync');
+    if (el) {
+      var icon = state === 'synced' ? '☁️' : state === 'syncing' ? '⏳' : state === 'error' ? '⚠️' : state === 'pending' ? '📴' : '💻';
+      el.textContent = icon + ' ' + text;
+      el.className = 'wbk-sync wbk-sync-' + state;
+    }
+  }
+
+  function initSync() {
+    /* 1) 取写回令牌（无则本机模式） */
+    fetch('../data/gh_token_enc.json')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (payload) {
+        if (payload && payload.enc) {
+          try { ghToken = xorDecode(payload.enc, passcode).trim(); } catch (e) { ghToken = null; }
+        }
+        /* 2) 拉远端待办（有则以远端为准） */
+        return fetch('../data/todos_enc.json?v=' + Date.now())
+          .then(function (r) { return r.ok ? r.json() : null; });
+      })
+      .then(function (payload) {
+        if (payload && payload.enc) {
+          try {
+            var remote = JSON.parse(xorDecode(payload.enc, passcode));
+            if (remote && typeof remote === 'object') {
+              saveTodosLocal(remote);
+              refreshTodo();
+            }
+          } catch (e) {}
+        }
+        setSync(ghToken ? 'synced' : 'local', ghToken ? '云端已同步' : '仅本机（未配置同步）');
+      })
+      .catch(function () {
+        setSync(ghToken ? 'error' : 'local', ghToken ? '云端读取失败（本机数据可用）' : '仅本机（未配置同步）');
+      });
+  }
+
+  var pushTimer = null;
+  function pushTodos() {
+    if (!ghToken) { setSync('local', '仅本机（未配置同步）'); return; }
+    setSync('syncing', '同步中…');
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(doPush, 1200);
+  }
+  function doPush() {
+    var t = loadTodos();
+    var encJson = JSON.stringify({enc: xorEncode(JSON.stringify(t), passcode)});
+    var apiBase = 'https://api.github.com/repos/' + REPO + '/contents/data/todos_enc.json';
+    fetch(apiBase, {headers: {'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github+json'}})
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (info) {
+        var body = {
+          message: 'workbench todos sync',
+          content: b64utf8(encJson),
+          branch: 'main'
+        };
+        if (info && info.sha) { body.sha = info.sha; }
+        return fetch(apiBase, {
+          method: 'PUT',
+          headers: {'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json'},
+          body: JSON.stringify(body)
+        });
+      })
+      .then(function (r) {
+        if (r && (r.status === 200 || r.status === 201)) {
+          var d = new Date();
+          setSync('synced', '已同步 ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2));
+        } else {
+          setSync('pending', '同步失败，已存本机，下次自动重试');
+        }
+      })
+      .catch(function () { setSync('pending', '同步失败，已存本机，下次自动重试'); });
+  }
+
+  /* ================= 待办：渲染 ================= */
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
   function fmtDT(ts) {
     var d = new Date(ts);
@@ -115,7 +233,6 @@
     if (diff <= 3) { return '<span class="wbk-due wbk-due-soon">限 ' + esc(due.slice(5)) + ' · 剩' + diff + '天</span>'; }
     return '<span class="wbk-due wbk-due-ok">限 ' + esc(due.slice(5)) + '</span>';
   }
-
   function pendingCount(t, sec) {
     return (t[sec] || []).filter(function (x) { return !x.done; }).length;
   }
@@ -130,7 +247,6 @@
     var h = '<div class="wbk-sec wbk-sec-todo">📌 待办事项 <span class="wbk-todo-total">' + totalPending(t) + ' 项进行中</span></div>';
     h += '<div class="wbk-card wbk-todo-card">';
 
-    /* 板块标签栏 */
     h += '<div class="wbk-tabs">';
     SECTIONS.forEach(function (s) {
       var n = pendingCount(t, s.id);
@@ -139,13 +255,11 @@
     });
     h += '</div>';
 
-    /* 新增表单 */
     h += '<div class="wbk-add">' +
       '<input id="tdText" type="text" placeholder="输入待办事项…" maxlength="120">' +
       '<input id="tdDue" type="date" title="目标完成期限">' +
       '<button class="wbk-addbtn" id="tdAdd">+ 添加</button></div>';
 
-    /* 进行中列表（按期限升序，无期限排最后） */
     var items = (t[curSection] || []).filter(function (x) { return !x.done; });
     items.sort(function (a, b) {
       var da = a.due || '9999', db = b.due || '9999';
@@ -162,7 +276,6 @@
         '<button class="wbk-del-btn" data-id="' + x.id + '" title="删除">×</button></div>';
     });
 
-    /* 已完成（默认折叠） */
     var done = (t[curSection] || []).filter(function (x) { return x.done; });
     done.sort(function (a, b) { return b.doneAt - a.doneAt; });
     if (done.length) {
@@ -178,19 +291,34 @@
       h += '</div>';
     }
 
-    /* 备份/恢复 */
-    h += '<div class="wbk-todo-foot"><span id="tdExport">⤒ 备份</span><span id="tdImport">⤓ 恢复</span><span class="wbk-todo-hint">数据存于本机浏览器</span></div>';
+    h += '<div class="wbk-todo-foot"><span id="tdExport">⤒ 备份</span><span id="tdImport">⤓ 恢复</span><span id="tdSync" class="wbk-sync">💻 本机</span></div>';
     h += '</div>';
     return h;
   }
 
-  function wireTodo(rerender) {
+  function refreshTodo() {
+    var zone = document.getElementById('todoZone');
+    if (!zone) { return; }
+    zone.innerHTML = renderTodoSection();
+    wireTodo();
+    setSync(syncState, syncText);  // 重渲染后恢复同步状态徽标
+  }
+
+  function mutate(fn) {
+    var t = loadTodos();
+    fn(t);
+    saveTodosLocal(t);
+    refreshTodo();
+    pushTodos();
+  }
+
+  function wireTodo() {
     var tabs = app.querySelectorAll('.wbk-tab');
     for (var i = 0; i < tabs.length; i++) {
       (function (btn) {
         btn.addEventListener('click', function () {
           curSection = btn.getAttribute('data-sec');
-          rerender();
+          refreshTodo();
         });
       })(tabs[i]);
     }
@@ -200,18 +328,17 @@
     function doAdd() {
       var v = (textEl.value || '').trim();
       if (!v) { textEl.focus(); return; }
-      var t = loadTodos();
-      if (!t[curSection]) { t[curSection] = []; }
-      t[curSection].push({
-        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-        text: v,
-        created: Date.now(),
-        due: dueEl.value || '',
-        done: false,
-        doneAt: 0
+      mutate(function (t) {
+        if (!t[curSection]) { t[curSection] = []; }
+        t[curSection].push({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          text: v,
+          created: Date.now(),
+          due: dueEl.value || '',
+          done: false,
+          doneAt: 0
+        });
       });
-      saveTodos(t);
-      rerender();
     }
     if (addBtn) {
       addBtn.addEventListener('click', doAdd);
@@ -221,12 +348,11 @@
     for (var j = 0; j < doneBtns.length; j++) {
       (function (btn) {
         btn.addEventListener('click', function () {
-          var t = loadTodos();
-          (t[curSection] || []).forEach(function (x) {
-            if (x.id === btn.getAttribute('data-id')) { x.done = true; x.doneAt = Date.now(); }
+          mutate(function (t) {
+            (t[curSection] || []).forEach(function (x) {
+              if (x.id === btn.getAttribute('data-id')) { x.done = true; x.doneAt = Date.now(); }
+            });
           });
-          saveTodos(t);
-          rerender();
         });
       })(doneBtns[j]);
     }
@@ -234,12 +360,11 @@
     for (var k = 0; k < reBtns.length; k++) {
       (function (btn) {
         btn.addEventListener('click', function () {
-          var t = loadTodos();
-          (t[curSection] || []).forEach(function (x) {
-            if (x.id === btn.getAttribute('data-id')) { x.done = false; x.doneAt = 0; }
+          mutate(function (t) {
+            (t[curSection] || []).forEach(function (x) {
+              if (x.id === btn.getAttribute('data-id')) { x.done = false; x.doneAt = 0; }
+            });
           });
-          saveTodos(t);
-          rerender();
         });
       })(reBtns[k]);
     }
@@ -248,23 +373,22 @@
       (function (btn) {
         btn.addEventListener('click', function () {
           if (!confirm('删除这条事项？')) { return; }
-          var t = loadTodos();
-          t[curSection] = (t[curSection] || []).filter(function (x) { return x.id !== btn.getAttribute('data-id'); });
-          saveTodos(t);
-          rerender();
+          mutate(function (t) {
+            t[curSection] = (t[curSection] || []).filter(function (x) { return x.id !== btn.getAttribute('data-id'); });
+          });
         });
       })(delBtns[m]);
     }
     var tg = document.getElementById('tdToggle');
     if (tg) {
-      tg.addEventListener('click', function () { doneOpen = !doneOpen; rerender(); });
+      tg.addEventListener('click', function () { doneOpen = !doneOpen; refreshTodo(); });
     }
     var ex = document.getElementById('tdExport');
     if (ex) {
       ex.addEventListener('click', function () {
         var s = localStorage.getItem(TODO_KEY) || '{}';
         if (navigator.clipboard) {
-          navigator.clipboard.writeText(s).then(function () { alert('已复制待办数据（可粘贴到另一设备的"恢复"）'); });
+          navigator.clipboard.writeText(s).then(function () { alert('已复制待办数据'); });
         } else {
           prompt('复制以下数据：', s);
         }
@@ -278,7 +402,8 @@
         try {
           JSON.parse(s);
           localStorage.setItem(TODO_KEY, s);
-          rerender();
+          refreshTodo();
+          pushTodos();
         } catch (e) { alert('数据格式不正确'); }
       });
     }
@@ -288,10 +413,8 @@
   function render(d, wh) {
     var h = '';
 
-    /* 0. 待办事项（置顶提醒） */
     h += '<div id="todoZone">' + renderTodoSection() + '</div>';
 
-    /* 1. 指标仪表盘 */
     h += '<div class="wbk-sec">💱 关键指标</div><div class="wbk-ind-grid">';
     (d.indicators || []).forEach(function (it) {
       var arrow = it.trend === 'up' ? '▲' : (it.trend === 'down' ? '▼' : '—');
@@ -304,7 +427,6 @@
     });
     h += '</div>';
 
-    /* 2. 情报区 */
     h += '<div class="wbk-sec">📰 情报</div>';
     h += '<div class="wbk-links">' +
       '<a class="wbk-link" href="../archive/' + esc(d.daily.date) + '.html">📊 ' + esc(d.daily.title) + ' <span>' + esc(d.daily.date) + '</span><em>' + esc(d.daily.note) + '</em></a>' +
@@ -328,7 +450,6 @@
       h += '<div class="wbk-wh-upd">数据截至 ' + esc(wh.updated || '') + '</div></div>';
     }
 
-    /* 3. 速算工具 */
     h += '<div class="wbk-sec">🧮 速算</div><div class="wbk-desk-2col"><div>';
     h += '<div class="wbk-card"><div class="wbk-card-title">💱 汇率换算（锁汇价对照）</div>' +
       '<div class="wbk-fx-row"><input id="fxAmt" type="number" value="100000" placeholder="金额">' +
@@ -345,7 +466,6 @@
       '</div><div class="wbk-calc-out" id="cOut"></div></div>';
     h += '</div></div>';
 
-    /* 4. 管理区 */
     h += '<div class="wbk-sec">📋 管理</div><div class="wbk-desk-2col"><div>';
     h += '<div class="wbk-card"><div class="wbk-card-title">🗓 关键节点</div>';
     (d.milestones || []).forEach(function (m) {
@@ -366,7 +486,6 @@
     }
     h += '</div></div>';
 
-    /* 5. 系统状态 */
     h += '<div class="wbk-sec">⚙️ 自动化体系</div><div class="wbk-card">';
     (d.system || []).forEach(function (s) {
       var dot = s.status === 'ok' ? '🟢' : (s.status === 'warn' ? '🟡' : '🔴');
@@ -374,17 +493,10 @@
     });
     h += '</div>';
 
-    h += '<div class="hint">数据更新：' + esc(d.updated || '') + ' · Edie的个人工作台 v1.2 · 私人页面请勿外传</div>';
+    h += '<div class="hint">数据更新：' + esc(d.updated || '') + ' · Edie的个人工作台 v1.3 · 私人页面请勿外传</div>';
     app.innerHTML = h;
 
-    function rerenderTodo() {
-      var zone = document.getElementById('todoZone');
-      zone.innerHTML = renderTodoSection();
-      wireTodo(rerenderTodo);
-      var nt = document.getElementById('tdText');
-      if (nt) { nt.focus(); }
-    }
-    wireTodo(rerenderTodo);
+    wireTodo();
     wireCalc();
   }
 
