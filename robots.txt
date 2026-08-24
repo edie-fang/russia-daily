@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /russia-daily/wb-e83f2a/
+Disallow: /russia-daily/data/workbench_enc.json
