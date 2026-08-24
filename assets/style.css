@@ -188,21 +188,20 @@ html, body {
 .wh-insight-text { font-size: 12px; color: var(--text-sub); line-height: 1.6; }
 .wh-insight-source { font-size: 10px; color: #a8a8a8; margin-top: 5px; }
 
-/* 待办事项：一次性全部排列，不折叠、不用标签切换 */
-.wh-todos { display: flex; flex-direction: column; gap: 6px; }
+/* 待办事项：简洁编号列表，依次排列，无卡片/标签样式 */
+.wh-todos { display: flex; flex-direction: column; gap: 2px; padding: 2px 0; }
 .wh-todo {
-  background: #fff; border-radius: 10px; padding: 9px 12px;
   display: flex; align-items: flex-start; gap: 8px;
-  border-left: 3px solid #22c55e;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  padding: 7px 4px;
+  border-bottom: 1px dashed #f3caca;
+  background: transparent;
 }
-.wh-todo-icon { font-size: 14px; line-height: 1.4; flex-shrink: 0; }
+.wh-todo:last-child { border-bottom: none; }
 .wh-todo-num {
-  font-size: 11px; font-weight: 700; color: #16a34a;
-  background: #f0fdf4; border-radius: 6px; padding: 1px 6px;
-  flex-shrink: 0; line-height: 1.6;
+  font-size: 13px; font-weight: 700; color: #b91c1c;
+  flex-shrink: 0; line-height: 1.6; min-width: 22px;
 }
-.wh-todo-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+.wh-todo-text { font-size: 13px; color: var(--text); line-height: 1.6; }
 .wh-todo-done { opacity: 0.55; }
 .wh-todo-done .wh-todo-text { text-decoration: line-through; }
 @media (max-width: 400px) {
