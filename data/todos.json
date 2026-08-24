@@ -1,0 +1,19 @@
+{
+ "updated": "2026-08-24",
+ "categories": [
+  {"id": "ecommerce", "name": "电商", "icon": "🛒"},
+  {"id": "trade", "name": "外贸", "icon": "🌏"},
+  {"id": "personal", "name": "个人", "icon": "👤"}
+ ],
+ "items": [
+  {"id": 1, "cat": "ecommerce", "text": "审查平台协议最新免责条款——WB/Ozon/YM 已在7月更新无人机/恐袭免责条款", "status": "pending"},
+  {"id": 2, "cat": "ecommerce", "text": "盘点库存集中度——统计WB单仓库存占比，评估单点风险", "status": "pending"},
+  {"id": 3, "cat": "ecommerce", "text": "高风险品类制定FBO→FBS切换预案", "status": "pending"},
+  {"id": 4, "cat": "ecommerce", "text": "评估购买无人机险——Ozon费率0.0115%/天", "status": "pending"},
+  {"id": 5, "cat": "ecommerce", "text": "建立跨平台库存转移预案（WB↔Ozon↔自建仓）", "status": "pending"},
+  {"id": 6, "cat": "ecommerce", "text": "遇袭城市改发替代仓库", "status": "pending"},
+  {"id": 7, "cat": "ecommerce", "text": "跟踪WB赔付登记进展", "status": "pending"},
+  {"id": 8, "cat": "ecommerce", "text": "跟踪政府救助措施（恢复计划/贷款重组/税收减免）", "status": "pending"},
+  {"id": 9, "cat": "ecommerce", "text": "评估哈萨克斯坦等海外仓选项", "status": "pending"}
+ ]
+}
