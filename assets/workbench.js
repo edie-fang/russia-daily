@@ -1,16 +1,15 @@
-/* Edie的个人工作台 渲染逻辑：读 ../data/workbench.json + ../data/warehouse_attacks.json */
+/* Edie的个人工作台 渲染逻辑（私有版）
+   - 数据加密存放：../data/workbench_enc.json（XOR(口令)+base64）
+   - 输入口令后解码渲染，口令经 localStorage 记住（每设备一次）
+   - 专题数据（公开信息）仍读 ../data/warehouse_attacks.json */
 (function () {
   'use strict';
   var app = document.getElementById('app');
   if (!app) { return; }
 
-  document.getElementById('today').textContent = new Date().toLocaleDateString('zh-CN', {month: 'long', day: 'numeric', weekday: 'short'});
-
-  Promise.all([
-    fetch('../data/workbench.json').then(function (r) { return r.json(); }),
-    fetch('../data/warehouse_attacks.json').then(function (r) { return r.json(); }).catch(function () { return null; })
-  ]).then(function (res) { render(res[0], res[1]); })
-    .catch(function () { app.innerHTML = '<div class="empty">数据加载失败，请稍后刷新</div>'; });
+  var LS_KEY = 'wbk_pc_v1';
+  document.getElementById('today').textContent =
+    new Date().toLocaleDateString('zh-CN', {year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'});
 
   function esc(s) {
     return String(s == null ? '' : s)
@@ -18,10 +17,63 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  function xorDecode(b64, pc) {
+    var bin = atob(b64);
+    var key = new TextEncoder().encode(pc);
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) {
+      out[i] = bin.charCodeAt(i) ^ key[i % key.length];
+    }
+    return new TextDecoder('utf-8').decode(out);
+  }
+
+  function tryUnlock(pc, remember) {
+    fetch('../data/workbench_enc.json')
+      .then(function (r) { return r.json(); })
+      .then(function (payload) {
+        var data;
+        try {
+          data = JSON.parse(xorDecode(payload.enc, pc));
+        } catch (e) {
+          showLock('口令错误，请重试');
+          return;
+        }
+        if (remember) { try { localStorage.setItem(LS_KEY, pc); } catch (e) {} }
+        fetch('../data/warehouse_attacks.json').then(function (r) { return r.json(); })
+          .catch(function () { return null; })
+          .then(function (wh) { render(data, wh); });
+      })
+      .catch(function () { showLock('数据加载失败，请稍后刷新'); });
+  }
+
+  function showLock(err) {
+    var lock = document.getElementById('lock');
+    if (lock) { lock.style.display = ''; }
+    var errEl = document.getElementById('pcErr');
+    if (errEl) { errEl.textContent = err || ''; }
+  }
+
+  /* 口令门 */
+  var saved = null;
+  try { saved = localStorage.getItem(LS_KEY); } catch (e) {}
+  var pcInput = document.getElementById('pcInput');
+  var pcBtn = document.getElementById('pcBtn');
+  if (pcBtn) {
+    pcBtn.addEventListener('click', function () { tryUnlock(pcInput.value, true); });
+    pcInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { tryUnlock(pcInput.value, true); }
+    });
+  }
+  if (saved) {
+    document.getElementById('lock').style.display = 'none';
+    tryUnlock(saved, false);
+  }
+
+  /* ===== 渲染 ===== */
   function render(d, wh) {
     var h = '';
 
-    /* ===== 1. 指标仪表盘 ===== */
+    /* 1. 指标仪表盘 */
     h += '<div class="wbk-sec">💱 关键指标</div><div class="wbk-ind-grid">';
     (d.indicators || []).forEach(function (it) {
       var arrow = it.trend === 'up' ? '▲' : (it.trend === 'down' ? '▼' : '—');
@@ -34,7 +86,7 @@
     });
     h += '</div>';
 
-    /* ===== 2. 情报区 ===== */
+    /* 2. 情报区 */
     h += '<div class="wbk-sec">📰 情报</div>';
     h += '<div class="wbk-links">' +
       '<a class="wbk-link" href="../archive/' + esc(d.daily.date) + '.html">📊 ' + esc(d.daily.title) + ' <span>' + esc(d.daily.date) + '</span><em>' + esc(d.daily.note) + '</em></a>' +
@@ -58,15 +110,14 @@
       h += '<div class="wbk-wh-upd">数据截至 ' + esc(wh.updated || '') + '</div></div>';
     }
 
-    /* ===== 3. 速算工具 ===== */
-    h += '<div class="wbk-sec">🧮 速算</div>';
-    /* 汇率换算 */
+    /* 3. 速算工具 */
+    h += '<div class="wbk-sec">🧮 速算</div><div class="wbk-desk-2col"><div>';
     h += '<div class="wbk-card"><div class="wbk-card-title">💱 汇率换算（锁汇价对照）</div>' +
       '<div class="wbk-fx-row"><input id="fxAmt" type="number" value="100000" placeholder="金额">' +
       '<select id="fxFrom"><option value="RUB">卢布 ₽</option><option value="CNY">人民币 ¥</option><option value="USD">美元 $</option></select>' +
       '<span class="wbk-fx-eq">=</span><span class="wbk-fx-out" id="fxOut"></span></div>' +
       '<div class="wbk-fx-rates">汇率 <input id="fxUsd" type="number" step="0.01" value="83.35" title="USD/RUB"> ₽/$ · <input id="fxCny" type="number" step="0.01" value="12.69" title="CNY/RUB"> ₽/¥</div></div>';
-    /* 佣金毛利 */
+    h += '</div><div>';
     h += '<div class="wbk-card"><div class="wbk-card-title">📦 佣金·毛利速算（₽）</div>' +
       '<div class="wbk-calc-grid">' +
       '<label>售价<input id="cPrice" type="number" value="1500"></label>' +
@@ -74,14 +125,15 @@
       '<label>物流<input id="cLog" type="number" value="120"></label>' +
       '<label>成本<input id="cCost" type="number" value="600"></label>' +
       '</div><div class="wbk-calc-out" id="cOut"></div></div>';
+    h += '</div></div>';
 
-    /* ===== 4. 管理区 ===== */
-    h += '<div class="wbk-sec">📋 管理</div>';
+    /* 4. 管理区 */
+    h += '<div class="wbk-sec">📋 管理</div><div class="wbk-desk-2col"><div>';
     h += '<div class="wbk-card"><div class="wbk-card-title">🗓 关键节点</div>';
     (d.milestones || []).forEach(function (m) {
       h += '<div class="wbk-ms wbk-ms-' + esc(m.level) + '"><span class="wbk-ms-date">' + esc(m.date) + '</span>' + esc(m.text) + '</div>';
     });
-    h += '</div>';
+    h += '</div></div><div>';
     h += '<div class="wbk-card"><div class="wbk-card-title">✅ 本周跟踪</div>';
     (d.todos || []).forEach(function (t) {
       h += '<div class="wbk-todo">• ' + esc(t) + '</div>';
@@ -94,8 +146,9 @@
       });
       h += '</div>';
     }
+    h += '</div></div>';
 
-    /* ===== 5. 系统状态 ===== */
+    /* 5. 系统状态 */
     h += '<div class="wbk-sec">⚙️ 自动化体系</div><div class="wbk-card">';
     (d.system || []).forEach(function (s) {
       var dot = s.status === 'ok' ? '🟢' : (s.status === 'warn' ? '🟡' : '🔴');
@@ -103,7 +156,7 @@
     });
     h += '</div>';
 
-    h += '<div class="hint">数据更新：' + esc(d.updated || '') + ' · Edie的个人工作台 v1</div>';
+    h += '<div class="hint">数据更新：' + esc(d.updated || '') + ' · Edie的个人工作台 v1.1 · 私人页面请勿外传</div>';
     app.innerHTML = h;
     wireCalc();
   }
