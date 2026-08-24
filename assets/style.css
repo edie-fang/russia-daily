@@ -349,3 +349,67 @@ html, body {
 @media (min-width: 820px) and (max-width: 1100px) {
   .wbk-page .wbk-ind-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ===== 待办事项模块 ===== */
+.wbk-sec-todo { display: flex; align-items: center; }
+.wbk-todo-total {
+  margin-left: auto; font-size: 11px; font-weight: 600; color: #fff;
+  background: #ef4444; border-radius: 10px; padding: 2px 9px;
+}
+.wbk-todo-total:empty { display: none; }
+.wbk-todo-card { border-top: 3px solid #ef4444; }
+.wbk-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 4px; }
+.wbk-tab {
+  flex-shrink: 0; border: 1px solid #e5e5e5; background: #fafafa; border-radius: 14px;
+  padding: 4px 11px; font-size: 12px; color: #555; cursor: pointer;
+}
+.wbk-tab.on { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+.wbk-tab i {
+  font-style: normal; background: #ef4444; color: #fff; border-radius: 8px;
+  font-size: 10px; padding: 0 5px; margin-left: 4px;
+}
+.wbk-add { display: flex; gap: 6px; margin: 6px 0 10px; }
+.wbk-add input[type="text"] { flex: 1; min-width: 0; }
+.wbk-add input[type="date"] { width: 128px; flex-shrink: 0; color: #666; }
+.wbk-addbtn {
+  flex-shrink: 0; border: none; border-radius: 8px; background: var(--accent); color: #fff;
+  font-size: 13px; font-weight: 600; padding: 0 14px; cursor: pointer;
+}
+.wbk-todo-empty { font-size: 12px; color: var(--text-sub); text-align: center; padding: 14px 0; }
+.wbk-ti {
+  display: flex; align-items: flex-start; gap: 8px; padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.wbk-ti:last-child { border-bottom: none; }
+.wbk-ti-main { flex: 1; min-width: 0; }
+.wbk-ti-text { font-size: 14px; line-height: 1.5; word-break: break-all; }
+.wbk-ti-meta { font-size: 11px; color: var(--text-sub); margin-top: 3px; }
+.wbk-done-btn {
+  flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; margin-top: 1px;
+  border: 1.5px solid var(--accent); background: #fff; color: var(--accent);
+  font-size: 13px; font-weight: 700; cursor: pointer; line-height: 1;
+}
+.wbk-done-btn:active { background: var(--accent); color: #fff; }
+.wbk-del-btn, .wbk-re-btn {
+  flex-shrink: 0; border: none; background: none; color: #c5c5c5;
+  font-size: 16px; cursor: pointer; padding: 0 3px; margin-top: 1px;
+}
+.wbk-re-btn { font-size: 14px; }
+.wbk-due { font-size: 10px; border-radius: 5px; padding: 1px 6px; }
+.wbk-due-none { background: #f3f3f3; color: #aaa; }
+.wbk-due-ok { background: #e8f5ee; color: #07a35a; }
+.wbk-due-soon { background: #fff7e6; color: #d97706; }
+.wbk-due-today { background: #ffedd5; color: #ea580c; font-weight: 700; }
+.wbk-due-over { background: #fee2e2; color: #dc2626; font-weight: 700; }
+.wbk-done-toggle {
+  margin-top: 10px; font-size: 12px; color: var(--text-sub); cursor: pointer;
+  padding: 6px 0; user-select: none;
+}
+.wbk-ti-done .wbk-ti-text { color: #b5b5b5; text-decoration: line-through; }
+.wbk-done-list { border-top: 1px dashed #e5e5e5; padding-top: 4px; }
+.wbk-todo-foot {
+  margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text-sub); display: flex; gap: 14px; align-items: center;
+}
+.wbk-todo-foot span { cursor: pointer; }
+.wbk-todo-hint { margin-left: auto; cursor: default !important; color: #c8c8c8; }
