@@ -241,8 +241,8 @@
   }
 
   function initSync() {
-    /* 1) 取写回令牌（无则本机模式） */
-    fetch('../data/gh_token_enc.json')
+    /* 1) 取写回令牌（无则本机模式）——加时间戳防缓存 */
+    fetch('../data/gh_token_enc.json?v=' + Date.now())
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (payload) {
         if (payload && payload.enc) {
