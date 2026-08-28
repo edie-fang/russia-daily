@@ -257,8 +257,15 @@
           try {
             var remote = JSON.parse(xorDecode(payload.enc, passcode));
             if (remote && typeof remote === 'object') {
-              saveTodosLocal(remote);
-              refreshTodo();
+              // 防护：远端为空对象时不要覆盖本地（避免清空本机数据）
+              var hasItems = false;
+              for (var k in remote) {
+                if (Array.isArray(remote[k]) && remote[k].length) { hasItems = true; break; }
+              }
+              if (hasItems) {
+                saveTodosLocal(remote);
+                refreshTodo();
+              }
             }
           } catch (e) {}
         }
@@ -316,6 +323,12 @@
   }
   function doPush() {
     var t = loadTodos();
+    // 防护：没有任何待办时不要推送（避免把空数据覆盖到云端）
+    var hasAny = false;
+    for (var k in t) {
+      if (Array.isArray(t[k]) && t[k].length) { hasAny = true; break; }
+    }
+    if (!hasAny) { setSync('synced', '云端已同步'); return; }
     var encJson = JSON.stringify({enc: xorEncode(JSON.stringify(t), passcode)});
     var apiBase = 'https://api.github.com/repos/' + REPO + '/contents/data/todos_enc.json';
     fetch(apiBase, {headers: {'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github+json'}})
