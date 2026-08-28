@@ -257,15 +257,20 @@
           try {
             var remote = JSON.parse(xorDecode(payload.enc, passcode));
             if (remote && typeof remote === 'object') {
-              // 防护：远端为空对象时不要覆盖本地（避免清空本机数据）
-              var hasItems = false;
-              for (var k in remote) {
-                if (Array.isArray(remote[k]) && remote[k].length) { hasItems = true; break; }
-              }
-              if (hasItems) {
-                saveTodosLocal(remote);
-                refreshTodo();
-              }
+              // 合并策略：本地+远端按 id 去重合并（推送失败时本地新增也不丢失）
+              var local = loadTodos();
+              var merged = { ecom: [], trade: [], personal: [] };
+              ['ecom', 'trade', 'personal'].forEach(function (s) {
+                var seen = {};
+                ((remote[s] || []).concat(local[s] || [])).forEach(function (x) {
+                  if (!x || !x.id || seen[x.id]) { return; }
+                  seen[x.id] = true;
+                  merged[s].push(x);
+                });
+              });
+              saveTodosLocal(merged);
+              refreshTodo();
+              if (ghToken) { pushTodos(); }  // 合并后把本地独有的推上云端
             }
           } catch (e) {}
         }
@@ -431,7 +436,7 @@
       }
     });
 
-    h += '<div class="wbk-todo-foot"><span id="tdExport">⤒ 备份</span><span id="tdImport">⤓ 恢复</span><span id="tdSyncCfg">⚙️ 配置同步</span><span id="tdSync" class="wbk-sync">💻 本机</span></div>';
+    h += '<div class="wbk-todo-foot"><span id="tdExport">⤒ 备份</span><span id="tdImport">⤓ 恢复</span><span id="tdClear">🗑️ 清空本地</span><span id="tdSyncCfg">⚙️ 配置同步</span><span id="tdSync" class="wbk-sync">💻 本机</span></div>';
     h += '</div>';
     return h;
   }
@@ -541,6 +546,14 @@
     }
     var cfg = document.getElementById('tdSyncCfg');
     if (cfg) { cfg.addEventListener('click', cfgSync); }
+    var clr = document.getElementById('tdClear');
+    if (clr) {
+      clr.addEventListener('click', function () {
+        if (!confirm('清空本机待办数据？（云端数据不受影响）')) { return; }
+        try { localStorage.removeItem(TODO_KEY); } catch (e) {}
+        refreshTodo();
+      });
+    }
     var im = document.getElementById('tdImport');
     if (im) {
       im.addEventListener('click', function () {
