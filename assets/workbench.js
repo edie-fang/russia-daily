@@ -263,6 +263,7 @@
           } catch (e) {}
         }
         setSync(ghToken ? 'synced' : 'local', ghToken ? '云端已同步' : '仅本机（未配置同步）');
+        if (ghToken) { pushTodos(); }  // 令牌就绪后立即把本地数据推上云端
       })
       .catch(function () {
         setSync(ghToken ? 'error' : 'local', ghToken ? '云端读取失败（本机数据可用）' : '仅本机（未配置同步）');
