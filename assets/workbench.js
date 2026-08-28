@@ -320,20 +320,20 @@
   }
 
   var pushTimer = null;
-  function pushTodos() {
+  function pushTodos(force) {
     if (!ghToken) { setSync('local', '仅本机（未配置同步）'); return; }
     setSync('syncing', '同步中…');
     clearTimeout(pushTimer);
-    pushTimer = setTimeout(doPush, 1200);
+    pushTimer = setTimeout(function () { doPush(!!force); }, 1200);
   }
-  function doPush() {
+  function doPush(force) {
     var t = loadTodos();
-    // 防护：没有任何待办时不要推送（避免把空数据覆盖到云端）
+    // 防护：没有任何待办且非强制时不要推送（避免把空数据覆盖到云端）
     var hasAny = false;
     for (var k in t) {
       if (Array.isArray(t[k]) && t[k].length) { hasAny = true; break; }
     }
-    if (!hasAny) { setSync('synced', '云端已同步'); return; }
+    if (!hasAny && !force) { setSync('synced', '云端已同步'); return; }
     var encJson = JSON.stringify({enc: xorEncode(JSON.stringify(t), passcode)});
     var apiBase = 'https://api.github.com/repos/' + REPO + '/contents/data/todos_enc.json';
     fetch(apiBase, {headers: {'Authorization': 'token ' + ghToken, 'Accept': 'application/vnd.github+json'}})
@@ -549,9 +549,11 @@
     var clr = document.getElementById('tdClear');
     if (clr) {
       clr.addEventListener('click', function () {
-        if (!confirm('清空本机待办数据？（云端数据不受影响）')) { return; }
+        if (!confirm('彻底重置待办？（本机 + 云端全部清空）')) { return; }
         try { localStorage.removeItem(TODO_KEY); } catch (e) {}
         refreshTodo();
+        if (ghToken) { pushTodos(true); }  // 强制推送空数据到云端（重置云端）
+        else { setSync('local', '已清空本机（云端未配置，无法同步）'); }
       });
     }
     var im = document.getElementById('tdImport');
