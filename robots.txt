@@ -3,3 +3,4 @@ Disallow: /russia-daily/wb-e83f2a/
 Disallow: /russia-daily/data/workbench_enc.json
 Disallow: /russia-daily/data/todos_enc.json
 Disallow: /russia-daily/data/gh_token_enc.json
+Disallow: /russia-daily/ci-4d72b1/
