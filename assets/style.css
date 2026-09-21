@@ -137,8 +137,23 @@ html, body {
 .wh-header {
   font-size: 17px; font-weight: 700; color: #b91c1c;
   display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  flex-wrap: wrap;
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
 }
 .wh-icon { font-size: 20px; }
+.wh-title-text { flex: 0 1 auto; }
+.wh-summary {
+  margin-left: auto; font-size: 11px; font-weight: 600; color: #b91c1c;
+  background: rgba(255,255,255,0.8); border: 1px solid #fca5a5;
+  padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+}
+.wh-chevron { font-size: 13px; color: #b91c1c; transition: transform .22s ease; flex: 0 0 auto; }
+.wh-body { display: block; }
+/* 收起态：只保留标题行 */
+.warehouse-section.wh-collapsed { padding: 12px 14px; }
+.warehouse-section.wh-collapsed .wh-header { margin-bottom: 0; }
+.warehouse-section.wh-collapsed .wh-chevron { transform: rotate(-90deg); }
+.warehouse-section.wh-collapsed .wh-body { display: none; }
 .wh-stats {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px;
 }
