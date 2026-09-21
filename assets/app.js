@@ -149,22 +149,47 @@
       '</div>';
     });
     sec.innerHTML =
-      '<div class="wh-header"><span class="wh-icon">🚨</span>电商平台仓库被炸专题</div>' +
-      '<div class="wh-stats">' +
-        '<div class="wh-stat wh-stat-wb"><div class="wh-num">' + wb + '</div><div class="wh-label">WB 被炸仓库</div></div>' +
-        '<div class="wh-stat wh-stat-ozon"><div class="wh-num">' + ozon + '</div><div class="wh-label">Ozon 被炸仓库</div></div>' +
-        '<div class="wh-stat"><div class="wh-num">' + events.length + '</div><div class="wh-label">累计遇袭事件</div></div>' +
-        '<div class="wh-stat wh-stat-cas"><div class="wh-num">' + dead + '死' + hurt + '伤</div><div class="wh-label">伤亡合计</div></div>' +
+      '<div class="wh-header" id="wh-toggle">' +
+        '<span class="wh-icon">🚨</span>' +
+        '<span class="wh-title-text">电商平台仓库被炸专题</span>' +
+        '<span class="wh-summary">' + wb + ' WB · ' + ozon + ' Ozon · ' + events.length + ' 起 · ' + dead + '死' + hurt + '伤</span>' +
+        '<span class="wh-chevron">▾</span>' +
       '</div>' +
-      '<div id="wh-map" class="wh-map"></div>' +
-      '<div class="wh-cards-title">📋 遇袭记录（最新在前）</div>' +
-      '<div class="wh-cards">' + cards + '</div>' +
-      (insightCards ? '<div class="wh-cards-title">🧠 深度解读（最新信息）</div><div class="wh-insights">' + insightCards + '</div>' : '') +
-      (todoHtml ? '<div class="wh-cards-title">✅ 卖家待办事项（共 ' + todos.length + ' 项）</div><div class="wh-todos">' + todoHtml + '</div>' : '') +
-      '<div class="wh-update">数据截至 ' + esc2(db.updated || '') + ' · 每日日报自动更新</div>';
-    initMap(events);
+      '<div class="wh-body" id="wh-body">' +
+        '<div class="wh-stats">' +
+          '<div class="wh-stat wh-stat-wb"><div class="wh-num">' + wb + '</div><div class="wh-label">WB 被炸仓库</div></div>' +
+          '<div class="wh-stat wh-stat-ozon"><div class="wh-num">' + ozon + '</div><div class="wh-label">Ozon 被炸仓库</div></div>' +
+          '<div class="wh-stat"><div class="wh-num">' + events.length + '</div><div class="wh-label">累计遇袭事件</div></div>' +
+          '<div class="wh-stat wh-stat-cas"><div class="wh-num">' + dead + '死' + hurt + '伤</div><div class="wh-label">伤亡合计</div></div>' +
+        '</div>' +
+        '<div id="wh-map" class="wh-map"></div>' +
+        '<div class="wh-cards-title">📋 遇袭记录（最新在前）</div>' +
+        '<div class="wh-cards">' + cards + '</div>' +
+        (insightCards ? '<div class="wh-cards-title">🧠 深度解读（最新信息）</div><div class="wh-insights">' + insightCards + '</div>' : '') +
+        (todoHtml ? '<div class="wh-cards-title">✅ 卖家待办事项（共 ' + todos.length + ' 项）</div><div class="wh-todos">' + todoHtml + '</div>' : '') +
+        '<div class="wh-update">数据截至 ' + esc2(db.updated || '') + ' · 每日日报自动更新</div>' +
+      '</div>';
+
+    // 折叠：默认收起为一行摘要，点击展开；展开状态记忆在 localStorage
+    var WH_KEY = 'wh_section_open';
+    var isOpen = false;
+    try { isOpen = localStorage.getItem(WH_KEY) === '1'; } catch (e) { isOpen = false; }
+    var toggleEl = document.getElementById('wh-toggle');
+    function syncCollapse() {
+      sec.classList.toggle('wh-collapsed', !isOpen);
+      if (isOpen) { window.setTimeout(function () { initMap(events); }, 60); }
+    }
+    if (toggleEl) {
+      toggleEl.addEventListener('click', function () {
+        isOpen = !isOpen;
+        try { localStorage.setItem(WH_KEY, isOpen ? '1' : '0'); } catch (e) {}
+        syncCollapse();
+      });
+    }
+    syncCollapse();
   }
 
+  var whMap = null;
   function initMap(events) {
     if (typeof L === 'undefined') {
       loadCss('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
@@ -172,8 +197,10 @@
       return;
     }
     var mapEl = document.getElementById('wh-map');
-    if (!mapEl || mapEl._leaflet_id) { return; }
+    if (!mapEl) { return; }
+    if (mapEl._leaflet_id) { if (whMap) { whMap.invalidateSize(); } return; }
     var map = L.map('wh-map').setView([52, 45], 4);
+    whMap = map;
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap', maxZoom: 16
     }).addTo(map);
