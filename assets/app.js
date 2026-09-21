@@ -165,8 +165,16 @@
         '<div id="wh-map" class="wh-map"></div>' +
         '<div class="wh-cards-title">📋 遇袭记录（最新在前）</div>' +
         '<div class="wh-cards">' + cards + '</div>' +
-        (insightCards ? '<div class="wh-cards-title">🧠 深度解读（最新信息）</div><div class="wh-insights">' + insightCards + '</div>' : '') +
-        (todoHtml ? '<div class="wh-cards-title">✅ 卖家待办事项（共 ' + todos.length + ' 项）</div><div class="wh-todos">' + todoHtml + '</div>' : '') +
+        (insightCards ?
+          '<div class="wh-sub" id="wh-sub-ins">' +
+            '<div class="wh-sub-head" data-sub="wh-sub-ins"><span class="wh-sub-title">🧠 深度解读</span><span class="wh-sub-count">' + insights.length + ' 条</span><span class="wh-sub-chevron">▾</span></div>' +
+            '<div class="wh-sub-body"><div class="wh-insights">' + insightCards + '</div></div>' +
+          '</div>' : '') +
+        (todoHtml ?
+          '<div class="wh-sub" id="wh-sub-todo">' +
+            '<div class="wh-sub-head" data-sub="wh-sub-todo"><span class="wh-sub-title">✅ 卖家待办事项</span><span class="wh-sub-count">' + todos.length + ' 项</span><span class="wh-sub-chevron">▾</span></div>' +
+            '<div class="wh-sub-body"><div class="wh-todos">' + todoHtml + '</div></div>' +
+          '</div>' : '') +
         '<div class="wh-update">数据截至 ' + esc2(db.updated || '') + ' · 每日日报自动更新</div>' +
       '</div>';
 
@@ -186,6 +194,23 @@
         syncCollapse();
       });
     }
+    // 二级折叠：深度解读 / 待办事项 默认收起（各自记忆状态）
+    var subs = sec.querySelectorAll('.wh-sub-head');
+    Array.prototype.forEach.call(subs, function (head) {
+      var id = head.getAttribute('data-sub');
+      var wrap = document.getElementById(id);
+      if (!wrap) { return; }
+      var openSub = false;
+      try { openSub = localStorage.getItem('wh_open_' + id) === '1'; } catch (e) { openSub = false; }
+      wrap.classList.toggle('wh-sub-collapsed', !openSub);
+      head.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        openSub = !openSub;
+        try { localStorage.setItem('wh_open_' + id, openSub ? '1' : '0'); } catch (e) {}
+        wrap.classList.toggle('wh-sub-collapsed', !openSub);
+      });
+    });
+
     syncCollapse();
   }
 
