@@ -170,6 +170,23 @@ html, body {
   background: #e5e7eb; border: 1px solid #fca5a5;
 }
 .wh-cards-title { font-size: 13px; font-weight: 600; color: #991b1b; margin: 4px 0 8px; }
+/* 二级折叠：深度解读 / 待办事项 */
+.wh-sub { margin-bottom: 6px; }
+.wh-sub-head {
+  display: flex; align-items: center; gap: 6px; margin: 4px 0 8px;
+  font-size: 13px; font-weight: 600; color: #991b1b;
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.wh-sub-title { flex: 0 1 auto; }
+.wh-sub-count {
+  margin-left: auto; font-size: 11px; font-weight: 600; color: #b91c1c;
+  background: rgba(255,255,255,0.8); border: 1px solid #fca5a5;
+  padding: 2px 8px; border-radius: 999px; white-space: nowrap;
+}
+.wh-sub-chevron { font-size: 12px; color: #b91c1c; transition: transform .22s ease; flex: 0 0 auto; }
+.wh-sub.wh-sub-collapsed .wh-sub-chevron { transform: rotate(-90deg); }
+.wh-sub.wh-sub-collapsed .wh-sub-body { display: none; }
+.wh-sub.wh-sub-collapsed .wh-sub-head { margin-bottom: 4px; }
 .wh-cards { display: flex; flex-direction: column; gap: 8px; }
 .wh-card {
   background: #fff; border-radius: 12px; padding: 10px 12px;
