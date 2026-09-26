@@ -491,3 +491,18 @@ html, body {
 }
 .wbk-todo-foot span { cursor: pointer; }
 .wbk-todo-hint { margin-left: auto; cursor: default !important; color: #c8c8c8; }
+
+/* ===== 日报板块分组标题 ===== */
+.cat-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 700; color: var(--text);
+  margin: 16px 0 8px; padding-left: 8px;
+  border-left: 4px solid #e11d48;
+}
+.list > .cat-title:first-child { margin-top: 10px; }
+.cat-count {
+  margin-left: auto; font-size: 11px; font-weight: 600;
+  color: var(--text-sub); background: rgba(0,0,0,0.05);
+  padding: 2px 8px; border-radius: 999px;
+}
+.wh-ago { font-size: 11px; color: #b91c1c; text-align: right; margin-top: 4px; opacity: 0.85; }
