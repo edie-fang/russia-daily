@@ -22,14 +22,19 @@
   var sections = data.sections || [];
   var html = '';
 
-  /* 分领域折叠卡片 */
+  /* 分领域折叠卡片（条数上限：电商≤8，其它每板块≤3） */
+  var wkSeq = 0;
   for (var s = 0; s < sections.length; s++) {
     var sec = sections[s];
     var items = sec.items || [];
+    var lim = /电商/.test(sec.name || '') ? 8 : 3;
+    var use = items.slice(0, lim);
     html += '<div class="wk-sec-title"><span class="wk-sec-icon">' + esc(sec.icon || '') + '</span>' +
-      esc(sec.name || '') + '<span class="wk-sec-count">' + items.length + ' 条</span></div>';
-    for (var i = 0; i < items.length; i++) {
-      var it = items[i];
+      esc(sec.name || '') + '<span class="wk-sec-count">' + use.length + ' 条' +
+      (items.length > lim ? '（另有 ' + (items.length - lim) + ' 条未显示）' : '') + '</span></div>';
+    for (var i = 0; i < use.length; i++) {
+      var it = use[i];
+      wkSeq++;
       var tableHtml = '';
       if (it.table && it.table.length) {
         tableHtml = '<table class="item-table">';
