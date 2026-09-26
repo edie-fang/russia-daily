@@ -20,15 +20,28 @@
     statsEl.innerHTML = pills.join('');
   }
 
-  /* 渲染卡片 */
-  var listEl = document.getElementById('list');
-  if (!items.length) {
-    listEl.innerHTML = '<div class="empty">本期无新增重大动态</div>';
-    return;
+  /* 板块配置：电商最多 10 条，其它板块各最多 5 条 */
+  var CATS = [
+    { key: 'ecom', icon: '📦', name: '电商动态', limit: 10,
+      kw: /Ozon|Wildberries|WB|Яндекс\s*Маркет|Yandex|маркетплейс|电商|仓储|物流|分拣|履约|配送|零售|卖家|平台经济|Магнит|М\.Видео|Лента|X5|АКОРТ|RWB|包装|跨境|选品|店铺|退货|маркетплейса/i },
+    { key: 'lighting', icon: '💡', name: '灯具照明', limit: 5, kw: /灯具|照明|LED|светильник|светотехник|灯泡|光源/i },
+    { key: 'beauty', icon: '💄', name: '美妆个护', limit: 5, kw: /美妆|化妆|护肤|香水|个护|парфюм|космет|脱毛|洗护|口腔|P&G|宝洁/i },
+    { key: 'appliance', icon: '🔌', name: '家电电器', limit: 5, kw: /家电|电器|бытов|техник|Smart\s*TV|智能电视|RuStore|智能眼镜|小家电|清洁电器|智能家居/i },
+    { key: 'econ', icon: '📊', name: '经济金融', limit: 5, kw: /央行|汇率|卢布|通胀|利率|油价|Brent|MOEX|Минфин|ЦБ|预算|税|GDP|工资|天然气|证券|抵押|信贷|分期|最低生活|被动收入|消费税/i },
+    { key: 'politics', icon: '🏛', name: '时政要闻', limit: 5, kw: /选举|杜马|普京|政府|制裁|无人机|袭击|打击|军事|国防|外交|特朗普|泽连斯基|停火|峰会|部长|法案|立法|炼油厂|州长|атака|БПЛА/i },
+    { key: 'other', icon: '📰', name: '其它动态', limit: 5, kw: null }
+  ];
+
+  function classify(it) {
+    if (it.cat) { return it.cat; }
+    var s = String(it.title || '');
+    for (var ci = 0; ci < CATS.length; ci++) {
+      if (CATS[ci].kw && CATS[ci].kw.test(s)) { return CATS[ci].key; }
+    }
+    return 'other';
   }
-  var html = '';
-  for (var i = 0; i < items.length; i++) {
-    var it = items[i];
+
+  function itemCard(it, displayNum) {
     var tableHtml = '';
     if (it.table && it.table.length) {
       tableHtml = '<table class="item-table">';
@@ -37,10 +50,10 @@
       }
       tableHtml += '</table>';
     }
-    html += '<div class="item" data-i="' + i + '">' +
+    return '<div class="item">' +
       '<div class="item-head">' +
         '<div class="item-title-row">' +
-          '<span class="item-num">' + (it.num || (i + 1)) + '</span>' +
+          '<span class="item-num">' + displayNum + '</span>' +
           '<div class="item-title">' + esc(it.title) + '</div>' +
         '</div>' +
         '<div class="item-meta">' +
@@ -58,6 +71,31 @@
       '</div></div>' +
     '</div>';
   }
+
+  /* 渲染卡片：按板块分组，每板块限量（电商 10，其它 5） */
+  var listEl = document.getElementById('list');
+  if (!items.length) {
+    listEl.innerHTML = '<div class="empty">本期无新增重大动态</div>';
+    return;
+  }
+  var grouped = {};
+  for (var gi = 0; gi < items.length; gi++) {
+    var gk = classify(items[gi]);
+    if (!grouped[gk]) { grouped[gk] = []; }
+    grouped[gk].push(items[gi]);
+  }
+  var html = '';
+  var seq = 0;
+  CATS.forEach(function (c) {
+    var arr = grouped[c.key] || [];
+    if (!arr.length) { return; }
+    var use = arr.slice(0, c.limit);
+    html += '<div class="cat-title">' + c.icon + ' ' + c.name +
+      '<span class="cat-count">' + use.length + ' 条' +
+      (arr.length > c.limit ? '（另有 ' + (arr.length - c.limit) + ' 条未显示）' : '') +
+      '</span></div>';
+    use.forEach(function (it) { seq++; html += itemCard(it, seq); });
+  });
   listEl.innerHTML = html;
 
   /* 展开/折叠 */
@@ -117,10 +155,9 @@
       var hm = c.match(/(\d+)\s*伤/); if (hm) hurt += parseInt(hm[1], 10);
       if (/另(\d+)人死/.test(c)) { dead += parseInt(c.match(/另(\d+)人死/)[1], 10); }
     });
-    var cards = '';
-    events.slice(0, 6).forEach(function (e) {
+    function eventCard(e) {
       var isOzon = e.platform === 'ozon';
-      cards += '<div class="wh-card">' +
+      return '<div class="wh-card">' +
         '<div class="wh-card-head"><span class="wh-badge wh-' + (isOzon ? 'ozon' : 'wb') + '">' + (isOzon ? 'Ozon' : 'WB') + '</span>' +
         '<span class="wh-date">' + esc2(e.date) + '</span></div>' +
         '<div class="wh-city">📍 ' + esc2(e.cityCn || e.city) + '</div>' +
@@ -128,8 +165,44 @@
         '<div class="wh-note">' + esc2(e.note || '') + '</div>' +
         (e.source ? '<a class="wh-source" href="' + esc2(e.source) + '" target="_blank">来源 ↗</a>' : '') +
       '</div>';
-    });
+    }
+    function clip(s, n) {
+      s = String(s == null ? '' : s);
+      return s.length > n ? s.slice(0, n) + '…' : s;
+    }
+    function daysAgo(dstr) {
+      var d = new Date(String(dstr) + 'T00:00:00');
+      if (isNaN(d.getTime())) { return ''; }
+      var diff = Math.floor((Date.now() - d.getTime()) / 86400000);
+      if (diff <= 0) { return '今天'; }
+      return diff + ' 天前';
+    }
+
     var insights = db.insights || [];
+    var todos = db.todos || [];
+
+    /* 只展示：最新一次遇袭 + 最新一条分析 */
+    var latest = events[0];
+    var latestHtml = latest
+      ? '<div class="wh-cards">' + eventCard(latest) + '</div>' +
+        '<div class="wh-ago">最近一次 · ' + esc2(latest.date) + '（' + daysAgo(latest.date) + '）</div>'
+      : '<div class="wh-note">暂无记录</div>';
+    var latestIns = null;
+    for (var ii = insights.length - 1; ii >= 0 && ii >= insights.length - 5; ii--) {
+      if (!/待核实/.test(insights[ii].title || '')) { latestIns = insights[ii]; break; }
+    }
+    if (!latestIns && insights.length) { latestIns = insights[insights.length - 1]; }
+    var latestInsHtml = latestIns
+      ? '<div class="wh-insight">' +
+          '<div class="wh-insight-head"><span class="wh-insight-icon">' + esc2(latestIns.icon || '💡') + '</span>' +
+          '<span class="wh-insight-title">' + esc2(latestIns.title) + '</span></div>' +
+          '<div class="wh-insight-text">' + esc2(clip(latestIns.text, 200)) + '</div>' +
+        '</div>'
+      : '';
+
+    /* 完整历史（默认折叠） */
+    var allCards = '';
+    events.forEach(function (e) { allCards += eventCard(e); });
     var insightCards = '';
     insights.forEach(function (ins) {
       insightCards += '<div class="wh-insight">' +
@@ -139,7 +212,6 @@
         (ins.source ? '<div class="wh-insight-source">来源：' + esc2(ins.source) + '</div>' : '') +
       '</div>';
     });
-    var todos = db.todos || [];
     var todoHtml = '';
     todos.forEach(function (t, i) {
       var done = t.status === 'done';
@@ -163,18 +235,17 @@
           '<div class="wh-stat wh-stat-cas"><div class="wh-num">' + dead + '死' + hurt + '伤</div><div class="wh-label">伤亡合计</div></div>' +
         '</div>' +
         '<div id="wh-map" class="wh-map"></div>' +
-        '<div class="wh-cards-title">📋 遇袭记录（最新在前）</div>' +
-        '<div class="wh-cards">' + cards + '</div>' +
-        (insightCards ?
-          '<div class="wh-sub" id="wh-sub-ins">' +
-            '<div class="wh-sub-head" data-sub="wh-sub-ins"><span class="wh-sub-title">🧠 深度解读</span><span class="wh-sub-count">' + insights.length + ' 条</span><span class="wh-sub-chevron">▾</span></div>' +
-            '<div class="wh-sub-body"><div class="wh-insights">' + insightCards + '</div></div>' +
-          '</div>' : '') +
-        (todoHtml ?
-          '<div class="wh-sub" id="wh-sub-todo">' +
-            '<div class="wh-sub-head" data-sub="wh-sub-todo"><span class="wh-sub-title">✅ 卖家待办事项</span><span class="wh-sub-count">' + todos.length + ' 项</span><span class="wh-sub-chevron">▾</span></div>' +
-            '<div class="wh-sub-body"><div class="wh-todos">' + todoHtml + '</div></div>' +
-          '</div>' : '') +
+        '<div class="wh-cards-title">📍 最新一次遇袭</div>' +
+        latestHtml +
+        (latestInsHtml ? '<div class="wh-cards-title">🧠 最新分析</div><div class="wh-insights">' + latestInsHtml + '</div>' : '') +
+        '<div class="wh-sub" id="wh-sub-history">' +
+          '<div class="wh-sub-head" data-sub="wh-sub-history"><span class="wh-sub-title">📚 完整历史</span><span class="wh-sub-count">' + events.length + ' 起 · ' + insights.length + ' 分析 · ' + todos.length + ' 待办</span><span class="wh-sub-chevron">▾</span></div>' +
+          '<div class="wh-sub-body">' +
+            (allCards ? '<div class="wh-cards-title">📋 全部遇袭记录（最新在前）</div><div class="wh-cards">' + allCards + '</div>' : '') +
+            (insightCards ? '<div class="wh-cards-title">🧠 全部分析</div><div class="wh-insights">' + insightCards + '</div>' : '') +
+            (todoHtml ? '<div class="wh-cards-title">✅ 卖家待办事项</div><div class="wh-todos">' + todoHtml + '</div>' : '') +
+          '</div>' +
+        '</div>' +
         '<div class="wh-update">数据截至 ' + esc2(db.updated || '') + ' · 每日日报自动更新</div>' +
       '</div>';
 
