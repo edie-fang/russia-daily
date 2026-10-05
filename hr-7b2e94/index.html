@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>面试评估单 · 财务总监岗</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root{
+    --navy:#1e3a5f; --red:#c0392b; --amber:#b8860b; --green:#1e7a4b;
+    --line:#dfe3ea; --muted:#6b7280; --bg:#f4f6f9; --card:#ffffff; --ink:#1a1f2b;
+  }
+  body{
+    margin:0; padding:0; background:var(--bg); color:var(--ink); line-height:1.65;
+    font-family:-apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+    font-size:15px; -webkit-text-size-adjust:100%;
+  }
+  .wrap{ max-width:840px; margin:0 auto; padding:0 16px 70px; }
+
+  header{
+    background:var(--navy); color:#fff; margin:0 -16px 20px; padding:26px 16px 20px;
+  }
+  header h1{ margin:0 0 8px; font-size:20px; letter-spacing:.3px; line-height:1.35; }
+  header .sub{ font-size:13px; opacity:.85; }
+  header .sub.meta{ font-size:12px; opacity:.7; margin-top:6px; }
+
+  h2{
+    font-size:16px; margin:30px 0 12px; padding-left:10px; color:var(--navy);
+    border-left:4px solid var(--navy);
+  }
+  h2 .n{ display:inline-block; font-size:12px; background:var(--navy); color:#fff;
+    border-radius:4px; padding:1px 6px; margin-right:8px; vertical-align:2px; }
+  p{ margin:9px 0; }
+  .muted{ color:var(--muted); font-size:13px; }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:15px 16px; margin:12px 0; }
+  .card.tight{ padding:12px 14px; }
+
+  /* 结论横幅 */
+  .verdict-banner{
+    background:#fff; border:1px solid var(--line); border-left:5px solid var(--red);
+    border-radius:10px; padding:15px 16px; margin:0 0 4px;
+  }
+  .verdict-banner .tag{
+    display:inline-block; background:var(--red); color:#fff; font-size:12px;
+    padding:2px 9px; border-radius:20px; margin-bottom:8px; letter-spacing:.5px;
+  }
+  .verdict-banner b{ color:var(--red); }
+  .verdict-banner p{ margin:6px 0; }
+
+  /* 时间轴 */
+  .tl{ position:relative; margin:14px 0 6px; padding-left:24px; }
+  .tl:before{ content:""; position:absolute; left:7px; top:6px; bottom:6px; width:2px; background:var(--line); }
+  .tl-item{ position:relative; margin-bottom:16px; }
+  .tl-item .dot{
+    position:absolute; left:-24px; top:4px; width:16px; height:16px; border-radius:50%;
+    background:#fff; border:3px solid var(--navy); box-sizing:border-box;
+  }
+  .tl-item.boom .dot{ border-color:var(--red); }
+  .tl-item .yr{ font-size:12px; color:var(--muted); font-weight:600; letter-spacing:.4px; }
+  .tl-item .co{ font-weight:700; font-size:15px; }
+  .tl-item .ind{ font-size:12.5px; color:var(--muted); }
+  .tl-item .exit{ font-size:12.5px; margin-top:4px; color:#374151; }
+  .boom-tag{
+    display:inline-block; background:#fdeaea; color:var(--red); border:1px solid #f3c4c0;
+    font-size:11.5px; padding:2px 8px; border-radius:5px; margin-top:5px; line-height:1.5;
+  }
+  .pill{ display:inline-block; font-size:11.5px; padding:2px 8px; border-radius:20px;
+    background:#eef2f7; color:#3b4a63; margin:2px 4px 0 0; }
+
+  /* 评分表 */
+  .score-row{ display:grid; grid-template-columns:1fr auto; gap:4px 12px; align-items:center;
+    padding:11px 0; border-bottom:1px dashed var(--line); }
+  .score-row:last-child{ border-bottom:none; }
+  .score-row .dim{ font-weight:600; font-size:14.5px; }
+  .score-row .dim small{ display:block; font-weight:400; color:var(--muted); font-size:12px; }
+  .score-row .val{ font-variant-numeric:tabular-nums; font-weight:700; font-size:16px; color:var(--navy); min-width:38px; text-align:right; }
+  .score-row .ctl{ grid-column:1 / -1; display:flex; align-items:center; gap:10px; }
+  .score-row input[type=range]{ flex:1; accent-color:var(--navy); height:26px; }
+  .base{ font-size:11px; color:var(--muted); }
+  .base b{ color:var(--navy); }
+
+  .total-bar{
+    display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+    background:#eef2f7; border-radius:9px; padding:13px 15px; margin-top:14px;
+  }
+  .total-bar .big{ font-size:30px; font-weight:800; color:var(--navy); font-variant-numeric:tabular-nums; line-height:1; }
+  .total-bar .band{ font-size:14px; font-weight:700; padding:3px 11px; border-radius:20px; }
+  .band.red{ background:#fdeaea; color:var(--red); }
+  .band.amber{ background:#fdf4e0; color:#8a6508; }
+  .band.green{ background:#e6f5ec; color:var(--green); }
+
+  /* 理由 */
+  ol.reasons{ padding-left:22px; margin:8px 0; }
+  ol.reasons li{ margin:11px 0; }
+  ol.reasons li b{ color:var(--red); }
+
+  /* 面试问题 */
+  .q{ border:1px solid var(--line); border-radius:9px; padding:13px 15px; margin:12px 0; background:#fff; }
+  .q .qno{ font-size:12px; font-weight:700; color:#fff; background:var(--navy);
+    border-radius:4px; padding:1px 7px; margin-right:8px; }
+  .q .qtxt{ font-weight:600; }
+  .qa{ margin-top:9px; font-size:13.5px; }
+  .qa .good{ color:var(--green); }
+  .qa .bad{ color:var(--red); }
+  .qa div{ margin:4px 0; }
+
+  /* 风险核实 */
+  .chk{ display:flex; gap:11px; align-items:flex-start; padding:11px 0; border-bottom:1px dashed var(--line); }
+  .chk:last-of-type{ border-bottom:none; }
+  .chk input{ width:20px; height:20px; margin-top:2px; accent-color:var(--red); flex:none; }
+  .chk .t{ font-size:14px; }
+  .chk .t small{ display:block; color:var(--muted); font-size:12.5px; margin-top:3px; }
+
+  .final{
+    margin-top:16px; padding:15px 16px; border-radius:10px; border:1px solid var(--line);
+    background:#fff; font-size:15px;
+  }
+  .final .res{ font-size:19px; font-weight:800; }
+  .final .res.red{ color:var(--red); }
+  .final .res.amber{ color:var(--amber); }
+  .final .res.green{ color:var(--green); }
+
+  footer{ margin-top:34px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12px; color:var(--muted); line-height:1.8; }
+  footer b{ color:#4b5563; }
+
+  .toolbar{ display:flex; gap:9px; flex-wrap:wrap; margin:14px 0 0; }
+  .btn{ border:1px solid var(--line); background:#fff; color:var(--navy); font-size:13px;
+    padding:8px 14px; border-radius:8px; cursor:pointer; font-weight:600; }
+  .btn:active{ background:#eef2f7; }
+  .btn.primary{ background:var(--navy); color:#fff; border-color:var(--navy); }
+
+  @media print{
+    @page{ size:A4; margin:11mm; }
+    body{ background:#fff; font-size:10.5pt; }
+    .wrap{ max-width:none; padding:0; }
+    header{ background:#fff; color:#000; border-bottom:2px solid #1e3a5f; margin:0 0 10px; padding:0 0 8px; }
+    header h1{ color:#000; font-size:15pt; }
+    header .sub,header .sub.meta{ color:#444; opacity:1; }
+    h2{ font-size:12pt; margin:14px 0 7px; page-break-after:avoid; }
+    .card,.q,.final,.verdict-banner{ break-inside:avoid; }
+    .toolbar,.no-print{ display:none !important; }
+    .tl-item,.score-row,.chk{ break-inside:avoid; }
+    .band.red,.band.amber,.band.green{ border:1px solid #999; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>面试评估单 · 财务总监岗</h1>
+    <div class="sub">候选人：裘女士 ｜ 跨境电商 / 外贸 财务总监 ｜ 宁波 ｜ 简历期望 10–40K</div>
+    <div class="sub meta">评估基准日 2026-10-06 ｜ 岗位预算 10–15K ｜ 现财务团队：加入（会计）、雨涛（出纳）｜ 缺口：整体财务统筹 + 协助解决业务困难</div>
+  </header>
+
+  <div class="verdict-banner">
+    <span class="tag">纸面初评结论</span>
+    <p><b>不建议按“财务总监”录用。可作降级候选（财务经理），但须先排除风险项。</b></p>
+    <p class="muted" style="margin-top:2px;">纸面综合 <b style="color:#1e3a5f;">5.3 / 10</b>（加权）｜ 简历注水已坐实 ｜ 能力树与本公司业务零交集 ｜ 无一天真·总监履历</p>
+  </div>
+
+  <!-- ============ 1 时间轴 ============ -->
+  <h2><span class="n">01</span>履历 × 行业风险 时间轴</h2>
+  <div class="card">
+    <div class="tl">
+
+      <div class="tl-item">
+        <span class="dot"></span>
+        <div class="yr">2012.07 – 2017.10 ｜ 5年3月</div>
+        <div class="co">中国人保 宁波分公司</div>
+        <div class="ind">保险 / 金融 · 财务主管</div>
+        <div class="exit" style="color:#1e7a4b;">✅ 央企，无暴雷事件</div>
+      </div>
+
+      <div class="tl-item boom">
+        <span class="dot"></span>
+        <div class="yr">2017.10 – 2022.08 ｜ 4年10月</div>
+        <div class="co">奥园集团</div>
+        <div class="ind">房地产 · 财务BP经理</div>
+        <div class="boom-tag">⚡ 2021.11 首笔信托违约 → 2022.01 美元债正式违约（境外债61亿美元全部违约）</div>
+        <div class="exit">她 <b>2022.08</b> 离开 —— <b style="color:#c0392b;">爆雷后 7 个月</b></div>
+      </div>
+
+      <div class="tl-item boom">
+        <span class="dot"></span>
+        <div class="yr">2022.08 – 2024.05 ｜ 1年9月</div>
+        <div class="co">中国贵酒集团</div>
+        <div class="ind">白酒 + 金融（海银系：韩宏伟 / 韩啸）· 财务经理</div>
+        <div class="boom-tag">⚡ 2023.12 海银财富停止全部兑付 → 2024.09 上海警方以非法集资立案，逾期 710 亿，韩氏父子被采取刑事强制措施</div>
+        <div class="exit">她 <b>2024.05</b> 离开 —— <b style="color:#c0392b;">爆雷后 5 个月，立案前 4 个月</b></div>
+      </div>
+
+      <div class="tl-item">
+        <span class="dot"></span>
+        <div class="yr">2024.06 – 2024.09 ｜ <b style="color:#c0392b;">仅 3 月</b></div>
+        <div class="co">浙江藏升科技集团有限公司</div>
+        <div class="ind">私募 / 财富管理（盘山系：蔡利平）· 财务经理</div>
+        <div class="exit">简历称“工贸一体+跨境电商集团”；实为 <b>参保 17 人</b>、注册资本 5 亿（实缴仅 50 万）的软件信息公司<br>
+          <span class="muted">2024.06 入职 → 2024.09 全日制读研</span></div>
+      </div>
+
+      <div class="tl-item">
+        <span class="dot"></span>
+        <div class="yr">2024.09 – 2026.06 ｜ 2 年</div>
+        <div class="co">中南财经政法大学 · 读研</div>
+        <div class="ind">简历把 4 条研究生课题包装成“工作经历”</div>
+      </div>
+
+    </div>
+    <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--line);">
+      <span class="pill">实际工作 ≈ 12年2月（简历自称 14 年）</span>
+      <span class="pill">100% 落在 保险 + 房地产 + 财富管理</span>
+      <span class="pill">零实体经营企业经历</span>
+      <span class="pill">零跨境电商 / 出口退税经历</span>
+    </div>
+  </div>
+
+  <!-- ============ 2 六维评分 ============ -->
+  <h2><span class="n">02</span>六维复评（滑动打分，实时算均值）</h2>
+  <div class="card">
+    <div id="rows"></div>
+    <div class="total-bar">
+      <div><div class="big" id="mean">—</div><div class="base" style="margin-top:3px;">当场复评均值 / 10</div></div>
+      <div><span class="band" id="band">—</span></div>
+      <div style="margin-left:auto;" class="base">纸面基准 <b>5.3</b></div>
+    </div>
+    <div class="toolbar no-print">
+      <button class="btn" id="btnReset">重置为纸面分</button>
+      <button class="btn" id="btnPrint">打印 / 存 PDF</button>
+    </div>
+    <p class="muted no-print" style="margin-top:10px;">第 2、3 项为本次岗位的<b>关键权重项</b>（多主体统筹 = 硬门槛；跨境外贸财务 = 致命缺口）。</p>
+  </div>
+
+  <!-- ============ 3 核心理由 ============ -->
+  <h2><span class="n">03</span>不建议按总监录用的三条理由</h2>
+  <div class="card">
+    <ol class="reasons">
+      <li><b>能力树全在“资本端”，与实体经营型财务零交集。</b><br>
+        12 年做的是“钱怎么来、怎么摊”（开发贷 / 预售监管 / 资金池 / 投资人报告）；你需要的则是“货怎么转、款怎么收、税怎么退”（库存周转 / 平台账期 / 出口退税 / 卢布汇率）。<b>两套完全不同的人。</b></li>
+      <li><b>没有一次“陪企业从小长大”的经历。</b><br>
+        她的路径是“平台倒了换下一个”的大厂螺丝钉模型。你的团队（宁波20 / 义乌6 / 浦江8 / 莫斯科8 / 郑州4）是从小做大的实体经营，需要能跟着业务长、能蹲下去看货的人。</li>
+      <li><b>简历注水已坐实，且两段经历疑似重复。</b><br>
+        ① 藏升科技把 17 人小公司写成“工贸一体跨境电商集团”；② “集团股权架构优化 / 跨境资金池”与读研项目里的“股权架构与治理优化 / 跨境电商 0-1 财务体系”内容高度重合；③ “国际注册会计师”≠ 中国 CPA，须验证书编号。</li>
+    </ol>
+    <p class="muted" style="margin-top:6px;">另注：<b>“履历在暴雷行业”本身不能作为拒人理由</b>——公司暴雷是实控人的账，她是中层。用这条拒人逻辑上站不住，会被候选人反杀。请以上述三条为准。</p>
+  </div>
+
+  <!-- ============ 4 面试问死 ============ -->
+  <h2><span class="n">04</span>面试必问 —— 问到答不出为止</h2>
+
+  <div class="q">
+    <div><span class="qno">Q1</span><span class="qtxt">奥园 2021 年底开始违约、海银 2023 年底停止兑付，这两段时间你都在职。你在内部看到了什么信号？当时做了什么？</span></div>
+    <div class="qa">
+      <div class="good">✔ 好答案：说得出具体指标（有息负债 / 现金短债比 / 预售监管资金挪用 / 资金池期限错配）、预警时点、自己向谁提过什么。</div>
+      <div class="bad">✘ 坏答案：“那是老板的事／我只管核算／我不清楚”——说明当时不在核心，或选择性失明。</div>
+    </div>
+  </div>
+
+  <div class="q">
+    <div><span class="qno">Q2</span><span class="qtxt">这两次离职，是主动辞职还是公司裁员？你带的团队当时裁了多少人？</span></div>
+    <div class="qa">
+      <div class="good">✔ 好答案：直接承认裁员或主动离开，时间线清楚、理由自洽。</div>
+      <div class="bad">✘ 坏答案：含糊其辞、“个人发展”“想休息一下”——爆雷后的窗口期大概率是裁员，回避即为不实。</div>
+    </div>
+  </div>
+
+  <div class="q">
+    <div><span class="qno">Q3</span><span class="qtxt">你在贵酒做的那 300 万节税，具体是什么架构？纳税主体是哪一家？这套方案有没有被税务或司法追过？</span></div>
+    <div class="qa">
+      <div class="good">✔ 好答案：说得清合法路径（研发加计扣除 / 小微优惠 / 区域性政策等），主体明确。</div>
+      <div class="bad">✘ 坏答案：说不清主体、回避、或答案指向“资金池 / 走账 / 代持”——<b>直接出局</b>，这是法律风险不是能力问题。</div>
+    </div>
+  </div>
+
+  <div class="q">
+    <div><span class="qno">Q4</span><span class="qtxt">（补测经营能力）你处理过应收账款坏账吗？你怎么判断一个客户该不该继续赊账？</span></div>
+    <div class="qa">
+      <div class="good">✔ 好答案：讲得出账龄分析、客户信用额度、回款周期与毛利的关系。</div>
+      <div class="bad">✘ 坏答案：只讲“按制度执行”、讲不出对经营的实际判断——说明她没在经营端做过财务。</div>
+    </div>
+  </div>
+
+  <!-- ============ 5 风险核实 ============ -->
+  <h2><span class="n">05</span>背景核实清单（勾上 = 已排除）</h2>
+  <div class="card">
+    <label class="chk"><input type="checkbox" id="r1"><span class="t"><b>手段①：电话核实贵酒在职时间与岗位</b>
+      <small>2022.08–2024.05 是否属实、汇报线、是否接触资金池相关账务。</small></span></label>
+    <label class="chk"><input type="checkbox" id="r2"><span class="t"><b>手段②：核实两次离职性质（主动 / 裁员）</b>
+      <small>奥园 2022.08、贵酒 2024.05，是否被优化、是否领取补偿。</small></span></label>
+    <label class="chk"><input type="checkbox" id="r3"><span class="t"><b>手段③：核实“国际注册会计师”证书编号</b>
+      <small>国际注会 ≠ 中国 CPA，需看清发证机构与编号。</small></span></label>
+    <label class="chk"><input type="checkbox" id="r4"><span class="t"><b>手段④：核实藏升科技 3 个月离职真因</b>
+      <small>是主动读研，还是试用不合格 / 项目夭折。</small></span></label>
+  </div>
+
+  <div class="final">
+    <div class="muted" style="margin-bottom:5px;">当场裁决建议</div>
+    <div class="res" id="finalRes">—</div>
+    <div class="muted" id="finalNote" style="margin-top:6px;"></div>
+  </div>
+
+  <footer>
+    <b>数据来源：</b>爱企查工商档案（Baiduspider UA 抓取 SEO 页，含股东穿透 / 高管 / 关键词零命中核验）；公开报道（第一财经、证券时报、每日经济新闻、观察者网）；候选人简历原件（BOSS 直聘导出件）。<br>
+    <b>核验要点：</b>藏升科技股东链为 蔡利平 99% → 盘固（杭州）科技 → 和赛股权投资（湖州）99% → 藏升科技 60%；藏升、和赛、盘固、蔡利平四个页面中“贵酒 / 海银 / 韩宏伟 / 韩啸 / 酒”命中数均为 <b>0</b>，与贵酒集团无股权及人员交集。<br>
+    <b>版本：</b>v1 · 生成于 2026-10-06 · 本页含个人信息，已 noindex + robots 排除，请勿转发。
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var DIMS = [
+    {k:"prof",  name:"专业硬实力", note:"CPA / 中级 / CMA / 学历 / 年限", base:6.5},
+    {k:"multi", name:"多主体财务经验", note:"跨主体合并报表 · 资金调度（硬门槛）", base:7,  key:true},
+    {k:"cross", name:"跨境外贸财务", note:"出口退税 · 汇率 · Ozon/WB/Yandex 结算（致命缺口）", base:4, key:true},
+    {k:"team",  name:"团队管理", note:"带过几人 · 分工 · 培养", base:6},
+    {k:"risk",  name:"风控合规", note:"审计 · 税筹 · 并购 · 内控", base:7},
+    {k:"stay",  name:"稳定性与匹配", note:"近 3 年跳槽频率 + 与本公司匹配度", base:4}
+  ];
+
+  var host = document.getElementById("rows");
+  DIMS.forEach(function(d){
+    var row = document.createElement("div");
+    row.className = "score-row";
+    row.innerHTML =
+      '<div class="dim">' + d.name + (d.key ? ' <span class="pill" style="background:#fdeaea;color:#c0392b;">关键项</span>' : '') +
+      '<small>' + d.note + '</small></div>' +
+      '<div class="val" id="v_' + d.k + '">' + d.base.toFixed(1) + '</div>' +
+      '<div class="ctl"><input type="range" min="0" max="10" step="0.5" value="' + d.base + '" id="s_' + d.k + '">' +
+      '<span class="base">基准 <b>' + d.base.toFixed(1) + '</b></span></div>';
+    host.appendChild(row);
+  });
+
+  var meanEl = document.getElementById("mean"),
+      bandEl = document.getElementById("band"),
+      resEl  = document.getElementById("finalRes"),
+      noteEl = document.getElementById("finalNote");
+
+  function bandOf(m){
+    if (m >= 7)   return {t:"可推进", cls:"green"};
+    if (m >= 5.5) return {t:"降级考虑", cls:"amber"};
+    return {t:"不推荐", cls:"red"};
+  }
+
+  function recalc(){
+    var sum = 0;
+    DIMS.forEach(function(d){
+      var v = parseFloat(document.getElementById("s_" + d.k).value);
+      sum += v;
+      document.getElementById("v_" + d.k).textContent = v.toFixed(1);
+    });
+    var m = sum / DIMS.length;
+    meanEl.textContent = m.toFixed(1);
+    var b = bandOf(m);
+    bandEl.textContent = b.t;
+    bandEl.className = "band " + b.cls;
+
+    // 风险封顶：有任何一项未核实 → 不得给“可推进”
+    var checked = ["r1","r2","r3","r4"].filter(function(id){
+      return document.getElementById(id).checked;
+    }).length;
+    var open = 4 - checked;
+
+    var label, note, cls;
+    if (m < 5.5){
+      label = "不推荐录用"; cls = "red";
+      note = "六维均值 " + m.toFixed(1) + "，低于门槛。";
+    } else if (open > 0){
+      label = "暂缓 · 待核实（最多降级）"; cls = "amber";
+      note = "六维均值 " + m.toFixed(1) + "，但仍有 " + open + " 项背景风险未排除。核实前不得给出录用结论。";
+    } else if (m >= 7){
+      label = "可推进（降级定位为财务经理）"; cls = "green";
+      note = "风险项已排除，六维均值 " + m.toFixed(1) + "。仍建议按财务经理定位谈薪（预算 10–15K）。";
+    } else {
+      label = "降级考虑（财务经理）"; cls = "amber";
+      note = "风险项已排除，六维均值 " + m.toFixed(1) + "。仅建议以财务经理定位推进，不适合总监岗。";
+    }
+    resEl.textContent = label;
+    resEl.className = "res " + cls;
+    noteEl.textContent = note;
+  }
+
+  DIMS.forEach(function(d){
+    document.getElementById("s_" + d.k).addEventListener("input", recalc);
+  });
+  ["r1","r2","r3","r4"].forEach(function(id){
+    document.getElementById(id).addEventListener("change", recalc);
+  });
+  document.getElementById("btnReset").addEventListener("click", function(){
+    DIMS.forEach(function(d){ document.getElementById("s_" + d.k).value = d.base; });
+    recalc();
+  });
+  document.getElementById("btnPrint").addEventListener("click", function(){ window.print(); });
+
+  recalc();
+})();
+</script>
+</body>
+</html>
