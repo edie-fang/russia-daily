@@ -60,7 +60,7 @@
         '<div class="item-body"><div class="item-body-inner">' +
           '<div class="item-summary">' + esc(it.summary) + '</div>' +
           tableHtml +
-          (it.sourceFull ? '<div class="item-source">🔗 ' + esc(it.sourceFull) + '</div>' : '') +
+          (it.sourceFull ? '<div class="item-source">🔗 <a class="src-link" href="' + esc(it.sourceFull) + '" target="_blank" rel="noopener noreferrer">' + esc(it.sourceFull) + '</a></div>' : '') +
         '</div></div>' +
       '</div>';
     }
