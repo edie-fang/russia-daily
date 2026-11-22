@@ -98,6 +98,8 @@ html, body {
 }
 .item-table th { background: #f7f7f7; color: var(--text-sub); font-weight: 500; }
 .item-source { font-size: 11px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; word-break: break-all; }
+.item-source a.src-link, a.src-link { color: var(--accent, #5b8def); text-decoration: none; word-break: break-all; }
+.item-source a.src-link:active, a.src-link:active { text-decoration: underline; }
 .footer-actions {
   position: fixed; bottom: 0; left: 0; right: 0;
   display: flex; justify-content: center; gap: 12px;
